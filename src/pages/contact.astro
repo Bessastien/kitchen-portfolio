@@ -78,19 +78,11 @@ import { Mail, Phone, MapPin } from "lucide-react";
                 <form
                     name="contact"
                     method="POST"
-                    data-netlify="true"
-                    netlify-honeypot="bot-field"
+                    netlify
                     action="/success"
                     class="space-y-6"
                 >
                     <input type="hidden" name="form-name" value="contact" />
-                    <p class="hidden">
-                        <label
-                            >Don't fill this out: <input
-                                name="bot-field"
-                            /></label
-                        >
-                    </p>
                     <div>
                         <label
                             for="name"
