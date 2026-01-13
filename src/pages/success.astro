@@ -1,0 +1,40 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Message envoyé">
+    <section class="max-w-2xl mx-auto text-center py-16">
+        <div
+            class="bg-white p-12 rounded-2xl shadow-sm border border-stone-100"
+        >
+            <div
+                class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"
+            >
+                <svg
+                    class="w-8 h-8 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-serif text-stone-900 mb-4">
+                Merci pour votre message !
+            </h1>
+            <p class="text-stone-600 mb-8">
+                Je vous répondrai dans les plus brefs délais.
+            </p>
+            <a
+                href="/"
+                class="inline-block bg-stone-900 text-white font-medium py-3 px-6 rounded-md hover:bg-amber-700 transition duration-300"
+            >
+                Retour à l'accueil
+            </a>
+        </div>
+    </section>
+</Layout>
