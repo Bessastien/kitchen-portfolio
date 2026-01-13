@@ -13,6 +13,8 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await project.render();
+const mainImage = project.data.mainImage;
+const isMainImageString = typeof mainImage === "string";
 ---
 
 <Layout title={`${project.data.title} - Chef Pâtissier`}>
@@ -42,13 +44,24 @@ const { Content } = await project.render();
     <div
       class="mb-12 rounded-2xl overflow-hidden shadow-xl aspect-video relative"
     >
-      <Image
-        src={project.data.mainImage}
-        alt={project.data.title}
-        width={1200}
-        height={675}
-        class="object-cover w-full h-full"
-      />
+      {
+        isMainImageString ? (
+          <img
+            src={mainImage}
+            alt={project.data.title}
+            class="object-cover w-full h-full"
+            loading="lazy"
+          />
+        ) : (
+          <Image
+            src={mainImage}
+            alt={project.data.title}
+            width={1200}
+            height={675}
+            class="object-cover w-full h-full"
+          />
+        )
+      }
     </div>
 
     <!-- Content -->

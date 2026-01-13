@@ -4,8 +4,9 @@ const projects = defineCollection({
   type: 'content',
   schema: ({ image }) => z.object({
     title: z.string(),
+    description: z.string().optional(),
     publishDate: z.coerce.date(),
-    mainImage: image(),
+    mainImage: z.union([z.string(), image()]),
     gallery: z.array(
       z.union([
         z.string(),
