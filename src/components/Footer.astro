@@ -1,0 +1,78 @@
+---
+import { Instagram, Mail } from "lucide-react";
+---
+
+<footer class="bg-white pt-20 pb-10 border-t border-stone-100">
+    <div class="max-w-4xl mx-auto px-4 text-center">
+        <!-- Brand -->
+        <a href="/" class="block mb-10 group">
+            <h2
+                class="font-serif text-3xl font-medium text-stone-900 tracking-tight mb-2 group-hover:text-amber-700 transition-colors"
+            >
+                Florent DABERT
+            </h2>
+            <p class="text-stone-400 font-light italic text-sm">
+                Artisan Créateur
+            </p>
+        </a>
+
+        <!-- Navigation -->
+        <nav class="mb-10">
+            <ul
+                class="flex justify-center flex-wrap gap-8 text-sm font-medium text-stone-500 uppercase tracking-widest"
+            >
+                <li>
+                    <a href="/" class="hover:text-amber-700 transition-colors"
+                        >Accueil</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="/projects"
+                        class="hover:text-amber-700 transition-colors"
+                        >Réalisations</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href="/contact"
+                        class="hover:text-amber-700 transition-colors"
+                        >Contact</a
+                    >
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Social -->
+        <div class="flex justify-center gap-6 mb-12">
+            <a
+                href="https://www.instagram.com/florent.dbtp/"
+                aria-label="Instagram"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-3 rounded-full text-stone-400 hover:text-white hover:bg-stone-900 transition-all duration-300 transform hover:scale-110"
+            >
+                <Instagram className="w-5 h-5" />
+            </a>
+            <a
+                href="mailto:flodab86@gmail.com"
+                aria-label="Contact"
+                class="p-3 rounded-full text-stone-400 hover:text-white hover:bg-stone-900 transition-all duration-300 transform hover:scale-110"
+            >
+                <Mail className="w-5 h-5" />
+            </a>
+        </div>
+
+        <!-- Copyright -->
+        <div class="pt-8 border-t border-stone-50">
+            <p class="text-stone-300 text-xs tracking-wider">
+                &copy; {new Date().getFullYear()} Florent DABERT. Tous droits réservés.
+            </p>
+            <p
+                class="text-stone-200 text-[10px] mt-2 tracking-widest uppercase"
+            >
+                Paris, France
+            </p>
+        </div>
+    </div>
+</footer>

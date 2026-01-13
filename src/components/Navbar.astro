@@ -1,0 +1,49 @@
+---
+import { Cake, Instagram, Mail } from "lucide-react";
+---
+
+<nav
+    class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-stone-100"
+>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <!-- Logo -->
+            <a href="/" class="flex items-center gap-2 group">
+                <img
+                    src="/favicon.svg"
+                    alt="Logo"
+                    class="w-8 h-8 group-hover:rotate-12 transition-transform duration-300"
+                />
+                <span
+                    class="text-2xl font-bold text-stone-900 tracking-tight font-serif"
+                >
+                    Florent DABERT
+                </span>
+            </a>
+
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a
+                    href="/"
+                    class="text-stone-600 hover:text-amber-700 font-medium transition-colors"
+                    >Accueil</a
+                >
+                <a
+                    href="/projects"
+                    class="text-stone-600 hover:text-amber-700 font-medium transition-colors"
+                    >Réalisations</a
+                >
+                <a
+                    href="/contact"
+                    class="text-stone-600 hover:text-amber-700 font-medium transition-colors"
+                    >Contact</a
+                >
+            </div>
+
+            <!-- Mobile Menu Button (Placeholder) -->
+            <div class="md:hidden">
+                <!-- Simple hamburger or similar could go here if needed -->
+            </div>
+        </div>
+    </div>
+</nav>
