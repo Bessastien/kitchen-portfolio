@@ -1,11 +1,11 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
-import { Image } from 'astro:assets';
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { Image } from "astro:assets";
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
-  return projects.map(project => ({
+  const projects = await getCollection("projects");
+  return projects.map((project) => ({
     params: { slug: project.slug },
     props: { project },
   }));
@@ -19,49 +19,69 @@ const { Content } = await project.render();
   <article class="max-w-4xl mx-auto">
     <!-- Header -->
     <header class="mb-12 text-center space-y-4">
-      <div class="inline-flex gap-2 text-sm text-amber-700 font-medium uppercase tracking-wider">
-        {project.data.tags.map(tag => (
-            <span>#{tag}</span>
-        ))}
+      <div
+        class="inline-flex gap-2 text-sm text-amber-700 font-medium uppercase tracking-wider"
+      >
+        {project.data.tags.map((tag) => <span>#{tag}</span>)}
       </div>
-      <h1 class="text-4xl md:text-6xl font-serif font-bold text-stone-900">{project.data.title}</h1>
-      <p class="text-stone-500">{project.data.publishDate.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      <h1 class="text-4xl md:text-6xl font-serif font-bold text-stone-900">
+        {project.data.title}
+      </h1>
+      <p class="text-stone-500">
+        {
+          project.data.publishDate.toLocaleDateString("fr-FR", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        }
+      </p>
     </header>
 
     <!-- Main Image -->
-    <div class="mb-12 rounded-2xl overflow-hidden shadow-xl aspect-video relative">
-        <Image 
-            src={project.data.mainImage} 
-            alt={project.data.title}
-            width={1200}
-            height={675}
-            class="object-cover w-full h-full"
-        />
+    <div
+      class="mb-12 rounded-2xl overflow-hidden shadow-xl aspect-video relative"
+    >
+      <Image
+        src={project.data.mainImage}
+        alt={project.data.title}
+        width={1200}
+        height={675}
+        class="object-cover w-full h-full"
+      />
     </div>
 
     <!-- Content -->
-    <div class="prose prose-stone prose-lg mx-auto prose-headings:font-serif prose-a:text-amber-700 hover:prose-a:text-amber-800">
+    <div
+      class="prose prose-stone prose-lg mx-auto prose-headings:font-serif prose-a:text-amber-700 hover:prose-a:text-amber-800"
+    >
       <Content />
     </div>
 
     <!-- Gallery -->
-    {project.data.gallery && project.data.gallery.length > 0 && (
+    {
+      project.data.gallery && project.data.gallery.length > 0 && (
         <div class="mt-16 pt-12 border-t border-stone-200">
-            <h2 class="text-3xl font-serif font-bold text-stone-900 mb-8 text-center">Galerie</h2>
-            <div class="grid md:grid-cols-2 gap-6">
-                {project.data.gallery.map((item, index) => (
-                    <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition">
-                        <Image 
-                            src={item.image} 
-                            alt={`${project.data.title} - Gallery ${index + 1}`}
-                            width={800}
-                            height={600}
-                            class="object-cover w-full h-full aspect-[4/3]"
-                        />
-                    </div>
-                ))}
-            </div>
+          <h2 class="text-3xl font-serif font-bold text-stone-900 mb-8 text-center">
+            Galerie
+          </h2>
+          <div class="grid md:grid-cols-2 gap-6">
+            {project.data.gallery.map((item, index) => {
+              const imageSrc = typeof item === "string" ? item : item.image;
+              return (
+                <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition">
+                  <img
+                    src={imageSrc}
+                    alt={`${project.data.title} - Gallery ${index + 1}`}
+                    class="object-cover w-full h-full aspect-[4/3]"
+                    loading="lazy"
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
-    )}
+      )
+    }
   </article>
 </Layout>

@@ -4,12 +4,14 @@ const projects = defineCollection({
   type: 'content',
   schema: ({ image }) => z.object({
     title: z.string(),
-    description: z.string(),
     publishDate: z.coerce.date(),
-    mainImage: image(), // Helper for relative images
-    gallery: z.array(z.object({
-      image: image()
-    })).optional(),
+    mainImage: image(),
+    gallery: z.array(
+      z.union([
+        z.string(),
+        z.object({ image: z.string() })
+      ])
+    ).optional(),
     tags: z.array(z.string()).default([]),
   }),
 });
