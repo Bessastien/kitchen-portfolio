@@ -8,7 +8,7 @@ gallery:
   - ../../assets/uploads/IMG_2221.jpeg
 tags:
   - Patisserie
-  - Fruit-rouges
+  - Fruitrouges
 ---
 ### L'Histoire
 La Forêt Noire (Schwarzwälder Kirschtorte) est mon gâteau préféré pour les anniversaires. C'est l'équilibre parfait entre la force du cacao, la douceur de la crème et le peps des griottes.
