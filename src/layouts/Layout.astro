@@ -14,14 +14,70 @@ const { title } = Astro.props;
 <html lang="fr" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="description"
-      content="Portfolio de Pâtissier - Gourmandise et Finesse"
-    />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
-    <title>Florent DABERT - Portfolio</title>
+    
+    <!-- SEO Principal -->
+    <title>{title} | Florent DABERT - Pâtissier à Poitiers</title>
+    <meta
+      name="description"
+      content="Florent Dabert, pâtissier professionnel à Poitiers. Découvrez mes créations artisanales, entremets, desserts maison. Disponible pour stages et restauration."
+    />
+    <meta
+      name="keywords"
+      content="Florent Dabert, pâtissier, pâtisserie, Poitiers, Vienne, 86, stage pâtisserie, restauration, desserts maison, entremets, gâteaux artisanaux, desserts professionnels, pâtisserie française, créations sucrées, chef pâtissier"
+    />
+    <meta name="author" content="Florent Dabert" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://florentdabert.bessastien.fr" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://florentdabert.bessastien.fr" />
+    <meta property="og:title" content="Florent DABERT - Pâtissier Professionnel à Poitiers" />
+    <meta property="og:description" content="Découvrez les créations de Florent Dabert, pâtissier passionné à Poitiers. Entremets, desserts maison, stages et restauration." />
+    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:site_name" content="Florent Dabert Pâtisserie" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://florentdabert.bessastien.fr" />
+    <meta name="twitter:title" content="Florent DABERT - Pâtissier Professionnel à Poitiers" />
+    <meta name="twitter:description" content="Découvrez les créations de Florent Dabert, pâtissier passionné à Poitiers. Entremets, desserts maison, stages et restauration." />
+    
+    <!-- Géolocalisation -->
+    <meta name="geo.region" content="FR-86" />
+    <meta name="geo.placename" content="Poitiers" />
+    <meta name="geo.position" content="46.580224;0.340375" />
+    <meta name="ICBM" content="46.580224, 0.340375" />
+    
+    <!-- Schema.org JSON-LD -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Florent Dabert",
+        "jobTitle": "Pâtissier",
+        "description": "Pâtissier professionnel spécialisé dans les créations artisanales, entremets et desserts maison",
+        "url": "https://florentdabert.bessastien.fr",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Poitiers",
+          "addressRegion": "Nouvelle-Aquitaine",
+          "postalCode": "86000",
+          "addressCountry": "FR"
+        },
+        "knowsAbout": [
+          "Pâtisserie",
+          "Entremets",
+          "Desserts maison",
+          "Restauration",
+          "Stage pâtisserie"
+        ],
+        "sameAs": []
+      }
+    </script>
 
     <!-- Fonts: Playfair Display (Serif) & Inter (Sans) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
