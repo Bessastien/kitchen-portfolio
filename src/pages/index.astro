@@ -22,15 +22,13 @@ try {
     const settings = JSON.parse(settingsContent);
 
     if (settings.featuredProjects && settings.featuredProjects.length > 0) {
-        // Get the slugs from the featured projects list
-        const featuredSlugs = settings.featuredProjects.map(
-            (item: { project: string }) => item.project,
-        );
+        // Featured projects are stored as simple slug strings
+        const featuredSlugs: string[] = settings.featuredProjects;
 
         // Find matching projects and preserve the order from settings
         const matchedProjects = featuredSlugs
-            .map((slug: string) => projects.find((p) => p.slug === slug))
-            .filter(Boolean);
+            .map((slug) => projects.find((p) => p.slug === slug))
+            .filter((p): p is (typeof projects)[number] => p !== undefined);
 
         if (matchedProjects.length > 0) {
             featuredProjects = matchedProjects;
