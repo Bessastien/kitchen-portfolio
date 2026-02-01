@@ -1,25 +1,52 @@
 backend:
-  name: git-gateway
-  branch: main
+    name: git-gateway
+    branch: main
 
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
-  - name: "projects"
-    label: "Projects"
-    folder: "src/content/projects"
-    create: true
-    slug: "{{slug}}"
-    fields:
-      - {label: "Title", name: "title", widget: "string"}
-      - {label: "Publish Date", name: "publishDate", widget: "datetime"}
-      - {label: "Main Image", name: "mainImage", widget: "image"}
-      - label: "Gallery (Optional)"
-        name: "gallery"
-        widget: "list"
-        required: false
-        summary: "{{fields.image}}"
-        field: {label: "Image", name: "image", widget: "image"}
-      - {label: "Tags", name: "tags", widget: "list", default: ["Patisserie"]}
-      - {label: "Body", name: "body", widget: "markdown"}
+    - name: "projects"
+      label: "Projects"
+      folder: "src/content/projects"
+      create: true
+      slug: "{{slug}}"
+      fields:
+          - { label: "Title", name: "title", widget: "string" }
+          - { label: "Publish Date", name: "publishDate", widget: "datetime" }
+          - { label: "Main Image", name: "mainImage", widget: "image" }
+          - label: "Gallery (Optional)"
+            name: "gallery"
+            widget: "list"
+            required: false
+            summary: "{{fields.image}}"
+            field: { label: "Image", name: "image", widget: "image" }
+          - {
+                label: "Tags",
+                name: "tags",
+                widget: "list",
+                default: ["Patisserie"],
+            }
+          - { label: "Body", name: "body", widget: "markdown" }
+
+    - name: "settings"
+      label: "⚙️ Paramètres"
+      files:
+          - name: "homepage"
+            label: "Page d'accueil"
+            file: "src/content/settings/homepage.json"
+            fields:
+                - label: "Projets mis en avant"
+                  name: "featuredProjects"
+                  widget: "list"
+                  max: 3
+                  min: 0
+                  summary: "{{fields.project}}"
+                  field:
+                      label: "Projet"
+                      name: "project"
+                      widget: "relation"
+                      collection: "projects"
+                      search_fields: ["title"]
+                      value_field: "{{slug}}"
+                      display_fields: ["title"]

@@ -2,11 +2,44 @@
 import Layout from "../layouts/Layout.astro";
 import ProjectCard from "../components/ProjectCard.astro";
 import { getCollection } from "astro:content";
+import fs from "fs";
+import path from "path";
 
 const projects = await getCollection("projects");
 const sortedProjects = projects.sort(
     (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
+
+// Load featured projects from settings
+let featuredProjects = sortedProjects.slice(0, 3); // Default fallback
+
+try {
+    const settingsPath = path.join(
+        process.cwd(),
+        "src/content/settings/homepage.json",
+    );
+    const settingsContent = fs.readFileSync(settingsPath, "utf-8");
+    const settings = JSON.parse(settingsContent);
+
+    if (settings.featuredProjects && settings.featuredProjects.length > 0) {
+        // Get the slugs from the featured projects list
+        const featuredSlugs = settings.featuredProjects.map(
+            (item: { project: string }) => item.project,
+        );
+
+        // Find matching projects and preserve the order from settings
+        const matchedProjects = featuredSlugs
+            .map((slug: string) => projects.find((p) => p.slug === slug))
+            .filter(Boolean);
+
+        if (matchedProjects.length > 0) {
+            featuredProjects = matchedProjects;
+        }
+    }
+} catch (e) {
+    // Settings file not found or invalid, use default (latest 3)
+    console.log("Using default featured projects (latest 3)");
+}
 ---
 
 <Layout title="Florent DABERT - Portfolio">
@@ -33,9 +66,9 @@ const sortedProjects = projects.sort(
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12"
         >
             {
-                sortedProjects
-                    .slice(0, 3)
-                    .map((project) => <ProjectCard project={project} />)
+                featuredProjects.map((project) => (
+                    <ProjectCard project={project} />
+                ))
             }
         </div>
 

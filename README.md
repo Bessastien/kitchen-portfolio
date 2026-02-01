@@ -1,43 +1,106 @@
-# Astro Starter Kit: Minimal
+# 🧁 Portfolio Florent DABERT - Pâtissier
 
-```sh
-npm create astro@latest -- --template minimal
+> **⚡ Projet Vibecoded** - Ce portfolio a été principalement créé avec l'aide d'une IA (Claude), en mode "vibe coding". Le développeur guide les choix créatifs et techniques, tandis que l'IA génère le code.
+
+Portfolio professionnel pour **Florent DABERT**, pâtissier passionné basé à Poitiers. Ce site présente ses créations pâtissières, ses réalisations et permet aux visiteurs de le contacter.
+
+## 🎯 À propos
+
+Ce projet est un **portfolio pâtisserie** créé pour mon petit frère Florent. L'objectif est de mettre en valeur son travail et ses compétences en pâtisserie de manière élégante et professionnelle.
+
+---
+
+## 🛠️ Technologies utilisées
+
+| Technologie                                                     | Version | Description                             |
+| --------------------------------------------------------------- | ------- | --------------------------------------- |
+| [Astro](https://astro.build/)                                   | 5.x     | Framework web statique moderne          |
+| [Tailwind CSS](https://tailwindcss.com/)                        | 4.x     | Framework CSS utility-first             |
+| [React](https://react.dev/)                                     | 19.x    | Composants interactifs (si nécessaire)  |
+| [Decap CMS](https://decapcms.org/)                              | -       | CMS headless pour la gestion de contenu |
+| [Lucide](https://lucide.dev/)                                   | -       | Icônes SVG élégantes                    |
+| [Netlify Identity](https://docs.netlify.com/security/identity/) | -       | Authentification pour le CMS            |
+
+---
+
+## 📁 Structure du projet
+
 ```
-
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
-
-```text
-/
+kitchen-portfolio/
 ├── public/
+│   ├── admin/              # Configuration Decap CMS
+│   │   ├── config.yml      # Schéma des collections
+│   │   └── index.html      # Page d'admin CMS
+│   ├── uploads/            # Images uploadées via CMS
+│   └── favicon.svg
 ├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
+│   ├── components/         # Composants Astro réutilisables
+│   │   ├── Footer.astro
+│   │   ├── Navbar.astro
+│   │   └── ProjectCard.astro
+│   ├── content/            # Contenu géré par le CMS
+│   │   ├── config.ts       # Schémas Zod des collections
+│   │   ├── projects/       # Projets pâtisserie (Markdown)
+│   │   └── settings/       # Paramètres (JSON)
+│   ├── layouts/
+│   │   └── Layout.astro    # Layout principal avec SEO
+│   ├── pages/              # Routes du site
+│   │   ├── index.astro     # Page d'accueil
+│   │   ├── projects.astro  # Galerie des projets
+│   │   ├── projects/[slug].astro  # Détail projet
+│   │   ├── contact.astro   # Page contact
+│   │   └── success.astro   # Confirmation message
+│   └── styles/
+│       └── global.css      # Styles Tailwind
+├── astro.config.mjs        # Configuration Astro
+├── package.json
+└── tsconfig.json
 ```
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+---
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## 🚀 Commandes
 
-Any static assets, like images, can be placed in the `public/` directory.
+| Commande          | Action                                               |
+| ----------------- | ---------------------------------------------------- |
+| `npm install`     | Installe les dépendances                             |
+| `npm run dev`     | Lance le serveur de développement (`localhost:4321`) |
+| `npm run build`   | Génère le site statique dans `./dist/`               |
+| `npm run preview` | Prévisualise le build localement                     |
 
-## 🧞 Commands
+---
 
-All commands are run from the root of the project, from a terminal:
+## 🎨 Fonctionnalités
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+- ✅ **SEO optimisé** - Meta tags, Open Graph, Schema.org
+- ✅ **CMS intégré** - Gestion des projets via Decap CMS
+- ✅ **Responsive** - Design adapté mobile/tablette/desktop
+- ✅ **Galerie dynamique** - Affichage des projets mis en avant ou récents
+- ✅ **Sitemap automatique** - Généré pour le référencement
 
-## 👀 Want to learn more?
+---
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+## 📝 Gestion du contenu
+
+L'administration du contenu se fait via **Decap CMS** :
+
+1. Accéder à `/admin` sur le site déployé
+2. Se connecter avec Netlify Identity
+3. Ajouter/modifier des projets avec images et descriptions
+
+---
+
+## 🌐 Déploiement
+
+Ce site est conçu pour être déployé sur **Netlify** :
+
+1. Connecter le repository à Netlify
+2. Activer Netlify Identity
+3. Activer Git Gateway dans les paramètres Identity
+4. Le site se déploie automatiquement à chaque push
+
+---
+
+## 📄 Licence
+
+Projet personnel - Tous droits réservés © Florent DABERT
