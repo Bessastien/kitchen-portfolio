@@ -1,9 +1,11 @@
 ---
-title: Bûche Full Chocolat
-publishDate: 2026-02-01T15:52:00.000+01:00
+title: Bûche Chocolat noir/lait
+publishDate: 2026-03-14T17:13:00.000+01:00
 mainImage: /uploads/img_2033.jpeg
 tags:
-    - Patisserie
+  - Patisserie
+  - buche
+  - chocolat
 ---
 
 Bûche réalisée à Noël 2025
