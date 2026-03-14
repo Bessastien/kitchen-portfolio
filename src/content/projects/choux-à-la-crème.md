@@ -1,9 +1,9 @@
 ---
 title: Choux à la crème
-publishDate: 2026-02-01T16:06:00.000+01:00
+publishDate: 2026-03-14T17:14:00.000+01:00
 mainImage: /uploads/img_1189.jpeg
 tags:
-    - Patisserie
+  - Patisserie
+  - chou
 ---
-
-Réalisation de choux à la crème
+Réalisation de choux, craquelin et crème pâtissière
