@@ -1,7 +1,9 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
+import { z } from "astro/zod";
 
 const projects = defineCollection({
-  type: 'content',
+  loader: glob({ base: "./src/content/projects", pattern: "**/*.{md,mdx}" }),
   schema: ({ image }) => z.object({
     title: z.string(),
     titleEn: z.string().optional(),
@@ -12,14 +14,12 @@ const projects = defineCollection({
     gallery: z.array(
       z.union([
         z.string(),
-        z.object({ image: z.string() })
-      ])
+        z.object({ image: z.string() }),
+      ]),
     ).optional(),
     tags: z.array(z.string()).default([]),
-    origin: z.enum(['campus120', 'cheval-blanc', 'personal', 'other']).optional(),
+    origin: z.enum(["campus120", "cheval-blanc", "personal", "other"]).optional(),
   }),
 });
 
-export const collections = {
-  projects,
-};
+export const collections = { projects };

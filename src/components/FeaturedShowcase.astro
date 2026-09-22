@@ -23,7 +23,7 @@ const { projects, locale = "fr" } = Astro.props;
 
     return (
       <a
-        href={href(locale, `/projects/${project.slug}`)}
+        href={href(locale, `/projects/${project.id}`)}
         class:list={["featured-piece", { "featured-piece--lead": index === 0 }]}
       >
         {imageSrc && <img src={imageSrc} alt={title} loading={index === 0 ? "eager" : "lazy"} />}

@@ -20,6 +20,7 @@ Ce projet est un **portfolio pâtisserie** créé pour mon petit frère Florent.
 | [Decap CMS](https://decapcms.org/)                              | -       | CMS headless pour la gestion de contenu |
 | [Lucide](https://lucide.dev/)                                   | -       | Icônes SVG élégantes                    |
 | [Netlify Identity](https://docs.netlify.com/security/identity/) | -       | Authentification pour le CMS            |
+| [Supabase](https://supabase.com/)                               | -       | Future administration, données et médias |
 
 ---
 
@@ -87,6 +88,8 @@ L'administration du contenu se fait via **Decap CMS** :
 1. Accéder à `/admin` sur le site déployé
 2. Se connecter avec Netlify Identity
 3. Ajouter/modifier des projets avec images et descriptions
+
+La nouvelle administration mobile est en cours de construction sur `/studio`. Elle fonctionne en aperçu sans configuration et utilisera Supabase Auth, Database et Storage une fois le projet connecté. Les instructions se trouvent dans `supabase/README.md`.
 
 ---
 
