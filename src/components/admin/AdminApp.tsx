@@ -17,20 +17,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Camera, Eye, GripVertical, ImagePlus, LogOut, Save, Sparkles, X } from "lucide-react";
+import { Camera, Eye, GripVertical, ImagePlus, LogOut, Pencil, Plus, Save, Sparkles, X } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
-
-type ProjectStatus = "draft" | "published" | "archived";
-
-type AdminProject = {
-  id: string;
-  title_fr: string;
-  title_en: string | null;
-  main_image_path: string | null;
-  main_image_url?: string | null;
-  origin: "campus120" | "cheval-blanc" | "personal" | "other" | null;
-  status: ProjectStatus;
-};
+import ProjectEditor from "./ProjectEditor";
+import { demoProjects, originLabels, projectSelect, type AdminProject, type ProjectOrigin } from "./types";
 
 type SiteSection = {
   id: string;
@@ -41,25 +31,12 @@ type SiteSection = {
   variant: "hero" | "editorial" | "grid" | "timeline" | "contact";
 };
 
-const demoProjects: AdminProject[] = [
-  { id: "demo-agrumes", title_fr: "Entremets aux agrumes", title_en: "Citrus entremets", main_image_path: null, main_image_url: "/uploads/IMG_1882.jpeg", origin: "campus120", status: "published" },
-  { id: "demo-choux", title_fr: "Choux à la crème", title_en: "Cream puffs", main_image_path: null, main_image_url: "/uploads/img_1189.jpeg", origin: "personal", status: "published" },
-  { id: "demo-sureau", title_fr: "Entremets au sureau, à la vanille et à la fraise", title_en: "Elderflower, vanilla and strawberry entremets", main_image_path: null, main_image_url: "/uploads/img_3425.jpeg", origin: "cheval-blanc", status: "draft" },
-];
-
 const demoSections: SiteSection[] = [
   { id: "hero", title_fr: "Introduction", title_en: "Introduction", enabled: true, position: 0, variant: "hero" },
   { id: "featured", title_fr: "À la une", title_en: "Featured work", enabled: true, position: 1, variant: "editorial" },
   { id: "journey", title_fr: "Mon parcours", title_en: "My journey", enabled: true, position: 2, variant: "timeline" },
   { id: "contact", title_fr: "Contact", title_en: "Contact", enabled: true, position: 3, variant: "contact" },
 ];
-
-const originLabels: Record<NonNullable<AdminProject["origin"]>, string> = {
-  campus120: "Campus 120",
-  "cheval-blanc": "Cheval Blanc",
-  personal: "Création personnelle",
-  other: "Autre",
-};
 
 function slugify(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -69,7 +46,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
   const client = useMemo(() => getSupabaseBrowserClient(), []);
   const [titleFr, setTitleFr] = useState("");
   const [titleEn, setTitleEn] = useState("");
-  const [origin, setOrigin] = useState<NonNullable<AdminProject["origin"]>>("campus120");
+  const [origin, setOrigin] = useState<ProjectOrigin>("campus120");
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -80,7 +57,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     setError("");
 
     if (!client) {
-      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status: "draft" });
+      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, description_fr: null, description_en: null, image_alt_fr: null, image_alt_en: null, tags: [], main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status: "draft", publication_authorized: false, published_at: null });
       onClose();
       return;
     }
@@ -102,7 +79,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     }
 
     const slug = `${slugify(titleFr)}-${crypto.randomUUID().slice(0, 6)}`;
-    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, origin, status: "draft", main_image_path: imagePath }).select("id,title_fr,title_en,main_image_path,origin,status").single();
+    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, origin, status: "draft", main_image_path: imagePath }).select(projectSelect).single();
     if (result.error) {
       setError("La création n’a pas pu être enregistrée. Elle reste à compléter.");
       setBusy(false);
@@ -131,7 +108,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
         <label className="mt-7 block text-sm font-bold">Photo principale<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600"><Camera className="size-5" />{file ? file.name : "Prendre ou choisir une photo"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="environment" onChange={(event) => setFile(event.target.files?.[0] || null)} /></span></label>
         <label className="mt-5 block text-sm font-bold">Nom du dessert en français<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleFr} onChange={(event) => setTitleFr(event.target.value)} required /></label>
         <label className="mt-4 block text-sm font-bold">Nom en anglais <span className="font-normal text-stone-400">(optionnel)</span><input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleEn} onChange={(event) => setTitleEn(event.target.value)} /></label>
-        <label className="mt-4 block text-sm font-bold">Contexte<select className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={origin} onChange={(event) => setOrigin(event.target.value as NonNullable<AdminProject["origin"]>)}>{Object.entries(originLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label className="mt-4 block text-sm font-bold">Contexte<select className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={origin} onChange={(event) => setOrigin(event.target.value as ProjectOrigin)}>{Object.entries(originLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
         <p className="mt-4 rounded-xl bg-stone-100 p-3 text-xs leading-relaxed text-stone-600">La création sera enregistrée en brouillon. Je pourrai compléter sa description et vérifier l’autorisation de publication avant de la rendre publique.</p>
         {error && <p className="mt-4 text-sm text-red-700" role="alert">{error}</p>}
         <button type="submit" className="button-primary mt-auto w-full gap-2 sm:mt-7" disabled={busy}><Save className="size-4" />{busy ? "Enregistrement…" : "Enregistrer le brouillon"}</button>
@@ -140,13 +117,13 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
   );
 }
 
-function SortableProject({ project, position }: { project: AdminProject; position: number }) {
+function SortableProject({ project, position, onRemove }: { project: AdminProject; position: number; onRemove: () => void }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: project.id });
   return (
     <article
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={`grid grid-cols-[4.5rem_1fr_3rem] items-center gap-3 rounded-2xl border bg-white p-2 shadow-sm ${isDragging ? "z-20 border-amber-500 opacity-90 shadow-xl" : "border-stone-200"}`}
+      className={`grid grid-cols-[4.5rem_1fr_3rem_3rem] items-center gap-2 rounded-2xl border bg-white p-2 shadow-sm ${isDragging ? "z-20 border-amber-500 opacity-90 shadow-xl" : "border-stone-200"}`}
     >
       <div className="relative h-18 overflow-hidden rounded-xl bg-stone-100">
         {project.main_image_url && <img src={project.main_image_url} alt="" className="h-full w-full object-cover" />}
@@ -159,6 +136,24 @@ function SortableProject({ project, position }: { project: AdminProject; positio
       <button type="button" className="grid size-11 touch-none place-items-center rounded-xl text-stone-500 hover:bg-stone-100" aria-label={`Déplacer ${project.title_fr}`} {...attributes} {...listeners}>
         <GripVertical className="size-5" />
       </button>
+      <button type="button" className="grid size-11 place-items-center rounded-xl text-stone-400 hover:bg-red-50 hover:text-red-700" onClick={onRemove} aria-label={`Retirer ${project.title_fr} de la une`}><X className="size-4" /></button>
+    </article>
+  );
+}
+
+function ProjectListCard({ project, featured, onEdit, onFeature }: { project: AdminProject; featured: boolean; onEdit: () => void; onFeature: () => void }) {
+  const statusLabel = project.status === "published" ? "Publié" : project.status === "archived" ? "Archivé" : "Brouillon";
+  return (
+    <article className="grid grid-cols-[4.5rem_1fr_auto] items-center gap-3 rounded-2xl border border-stone-200 bg-white p-2.5">
+      <div className="h-18 overflow-hidden rounded-xl bg-stone-100">{project.main_image_url && <img src={project.main_image_url} alt="" className="h-full w-full object-cover" />}</div>
+      <button type="button" className="min-w-0 text-left" onClick={onEdit}>
+        <h3 className="truncate font-serif text-lg font-semibold text-stone-950">{project.title_fr}</h3>
+        <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500"><span className={project.status === "published" ? "font-bold text-emerald-700" : ""}>{statusLabel}</span><span>·</span><span>{project.origin ? originLabels[project.origin] : "Contexte à renseigner"}</span></p>
+      </button>
+      <div className="flex gap-1">
+        {project.status === "published" && project.publication_authorized && <button type="button" className={`grid size-10 place-items-center rounded-xl ${featured ? "bg-amber-100 text-amber-900" : "text-stone-500 hover:bg-stone-100"}`} onClick={onFeature} aria-label={featured ? `Retirer ${project.title_fr} de la une` : `Ajouter ${project.title_fr} à la une`}><Sparkles className="size-4" /></button>}
+        <button type="button" className="grid size-10 place-items-center rounded-xl text-stone-500 hover:bg-stone-100" onClick={onEdit} aria-label={`Modifier ${project.title_fr}`}><Pencil className="size-4" /></button>
+      </div>
     </article>
   );
 }
@@ -210,11 +205,12 @@ export default function AdminApp() {
   const client = useMemo(() => getSupabaseBrowserClient(), []);
   const [authenticated, setAuthenticated] = useState(!isSupabaseConfigured);
   const [projects, setProjects] = useState<AdminProject[]>(demoProjects);
-  const [featuredIds, setFeaturedIds] = useState(demoProjects.map((project) => project.id));
+  const [featuredIds, setFeaturedIds] = useState(demoProjects.filter((project) => project.status === "published" && project.publication_authorized).map((project) => project.id));
   const [sections, setSections] = useState<SiteSection[]>(demoSections);
   const [notice, setNotice] = useState(isSupabaseConfigured ? "" : "Mode aperçu : connectez Supabase pour enregistrer les changements.");
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<AdminProject | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -232,7 +228,7 @@ export default function AdminApp() {
   useEffect(() => {
     if (!client || !authenticated) return;
     Promise.all([
-      client.from("projects").select("id,title_fr,title_en,main_image_path,origin,status").order("updated_at", { ascending: false }),
+      client.from("projects").select(projectSelect).order("updated_at", { ascending: false }),
       client.from("homepage_featured").select("project_id,position").order("position"),
       client.from("site_sections").select("id,title_fr,title_en,enabled,position,variant").order("position"),
     ]).then(([projectResult, featuredResult, sectionResult]) => {
@@ -251,6 +247,24 @@ export default function AdminApp() {
   }, [client, authenticated]);
 
   const featuredProjects = featuredIds.map((id) => projects.find((project) => project.id === id)).filter((project): project is AdminProject => Boolean(project));
+
+  function toggleFeatured(project: AdminProject) {
+    if (featuredIds.includes(project.id)) {
+      setFeaturedIds((current) => current.filter((id) => id !== project.id));
+      setNotice("Création retirée de la sélection. Je peux maintenant enregistrer la une.");
+      return;
+    }
+    if (featuredIds.length >= 6) {
+      setNotice("La une peut contenir au maximum six créations.");
+      return;
+    }
+    if (project.status !== "published" || !project.publication_authorized) {
+      setNotice("Je dois d’abord publier et autoriser cette création.");
+      return;
+    }
+    setFeaturedIds((current) => [...current, project.id]);
+    setNotice("Sélection modifiée. Je peux maintenant enregistrer la une.");
+  }
 
   function onDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -279,14 +293,7 @@ export default function AdminApp() {
       return;
     }
     setSaving(true);
-    const removeResult = await client.from("homepage_featured").delete().not("id", "is", null);
-    if (removeResult.error) {
-      setNotice("L’enregistrement a échoué. L’ordre précédent est conservé.");
-      setSaving(false);
-      return;
-    }
-    const rows = featuredIds.map((project_id, index) => ({ project_id, position: index + 1 }));
-    const { error } = await client.from("homepage_featured").insert(rows);
+    const { error } = await client.rpc("replace_homepage_featured", { project_ids: featuredIds });
     setNotice(error ? "L’ordre n’a pas pu être enregistré." : "La une est à jour.");
     setSaving(false);
   }
@@ -321,13 +328,20 @@ export default function AdminApp() {
         </section>
 
         <section className="mt-8 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
-          <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Page d’accueil</p><h2 className="mt-1 font-serif text-3xl">Ma sélection à la une</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je maintiens la poignée, puis je déplace une création. L’ordre affiché ici sera celui du site.</p></div>
+          <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Page d’accueil · {featuredIds.length}/6</p><h2 className="mt-1 font-serif text-3xl">Ma sélection à la une</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je maintiens la poignée pour changer l’ordre. Je peux retirer une création avec la croix et en ajouter depuis « Mes créations ».</p></div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={featuredIds} strategy={verticalListSortingStrategy}>
-              <div className="grid gap-3">{featuredProjects.map((project, index) => <SortableProject key={project.id} project={project} position={index + 1} />)}</div>
+              <div className="grid gap-3">{featuredProjects.map((project, index) => <SortableProject key={project.id} project={project} position={index + 1} onRemove={() => toggleFeatured(project)} />)}</div>
             </SortableContext>
           </DndContext>
+          {featuredProjects.length === 0 && <p className="rounded-2xl border border-dashed border-stone-300 p-5 text-center text-sm text-stone-500">Aucune création à la une pour le moment.</p>}
           <button type="button" className="button-primary mt-5 w-full gap-2" onClick={saveFeatured} disabled={saving}><Save className="size-4" />{saving ? "Enregistrement…" : "Enregistrer l’ordre"}</button>
+        </section>
+
+        <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
+          <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Contenu</p><h2 className="mt-1 font-serif text-3xl">Mes créations</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je touche une création pour compléter ses textes, confirmer les droits ou la publier. L’étoile l’ajoute à la une.</p></div>
+          <div className="grid gap-3">{projects.map((project) => <ProjectListCard key={project.id} project={project} featured={featuredIds.includes(project.id)} onEdit={() => setEditing(project)} onFeature={() => toggleFeatured(project)} />)}</div>
+          <button type="button" className="button-secondary mt-5 w-full gap-2" onClick={() => setCreating(true)}><Plus className="size-4" />Ajouter une création</button>
         </section>
 
         <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
@@ -341,6 +355,7 @@ export default function AdminApp() {
         </section>
       </div>
       {creating && <CreateProjectSheet onClose={() => setCreating(false)} onCreated={(project) => { setProjects((current) => [project, ...current]); setNotice("Le brouillon a été ajouté."); }} />}
+      {editing && <ProjectEditor project={editing} onClose={() => setEditing(null)} onSaved={(project, message) => { setProjects((current) => current.map((item) => item.id === project.id ? project : item)); if (project.status !== "published") setFeaturedIds((current) => current.filter((id) => id !== project.id)); setEditing(null); setNotice(message); }} />}
     </main>
   );
 }

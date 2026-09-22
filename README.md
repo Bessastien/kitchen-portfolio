@@ -89,7 +89,7 @@ L'administration du contenu se fait via **Decap CMS** :
 2. Se connecter avec Netlify Identity
 3. Ajouter/modifier des projets avec images et descriptions
 
-La nouvelle administration mobile est en cours de construction sur `/studio`. Elle fonctionne en aperçu sans configuration et utilisera Supabase Auth, Database et Storage une fois le projet connecté. Les instructions se trouvent dans `supabase/README.md`.
+La nouvelle administration mobile est en cours de construction sur `/studio`. Elle fonctionne en aperçu sans configuration et utilisera Supabase Auth, Database et Storage une fois le projet connecté. Elle permet déjà d’ajouter et modifier une création bilingue, de contrôler sa publication, puis de composer la sélection à la une par glisser-déposer. Les instructions se trouvent dans `supabase/README.md`.
 
 ---
 
