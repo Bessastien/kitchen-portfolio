@@ -1,5 +1,10 @@
 ---
 import { Mail } from "lucide-astro";
+import { href, labels, type Locale } from "../lib/site";
+
+interface Props { locale?: Locale; }
+const { locale = "fr" } = Astro.props;
+const t = labels[locale];
 ---
 
 <footer class="bg-white pt-20 pb-10 border-t border-stone-100">
@@ -9,10 +14,10 @@ import { Mail } from "lucide-astro";
             <h2
                 class="font-serif text-3xl font-medium text-stone-900 tracking-tight mb-2 group-hover:text-amber-700 transition-colors"
             >
-                Florent DABERT
+                Florent Dabert
             </h2>
             <p class="text-stone-400 font-light italic text-sm">
-                Artisan Créateur
+                {locale === "fr" ? "Desserts de restaurant" : "Restaurant desserts"}
             </p>
         </a>
 
@@ -22,22 +27,29 @@ import { Mail } from "lucide-astro";
                 class="flex justify-center flex-wrap gap-8 text-sm font-medium text-stone-500 uppercase tracking-widest"
             >
                 <li>
-                    <a href="/" class="hover:text-amber-700 transition-colors"
-                        >Accueil</a
+                    <a href={href(locale)} class="hover:text-amber-700 transition-colors"
+                        >{t.home}</a
                     >
                 </li>
                 <li>
                     <a
-                        href="/projects"
+                        href={href(locale, "/projects")}
                         class="hover:text-amber-700 transition-colors"
-                        >Réalisations</a
+                        >{t.creations}</a
                     >
                 </li>
                 <li>
                     <a
-                        href="/contact"
+                        href={href(locale, "/journey")}
                         class="hover:text-amber-700 transition-colors"
-                        >Contact</a
+                        >{t.journey}</a
+                    >
+                </li>
+                <li>
+                    <a
+                        href={href(locale, "/contact")}
+                        class="hover:text-amber-700 transition-colors"
+                        >{t.contact}</a
                     >
                 </li>
             </ul>
@@ -57,7 +69,7 @@ import { Mail } from "lucide-astro";
         <!-- Copyright -->
         <div class="pt-8 border-t border-stone-50">
             <p class="text-stone-300 text-xs tracking-wider">
-                &copy; {new Date().getFullYear()} Florent DABERT. Tous droits réservés.
+                &copy; {new Date().getFullYear()} Florent Dabert. {locale === "fr" ? "Tous droits réservés." : "All rights reserved."}
             </p>
             <p
                 class="text-stone-200 text-[10px] mt-2 tracking-widest uppercase"

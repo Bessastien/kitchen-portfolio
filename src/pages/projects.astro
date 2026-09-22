@@ -7,23 +7,34 @@ const projects = await getCollection("projects");
 const sortedProjects = projects.sort(
     (a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf(),
 );
+const filters = [
+    { label: "Entremets", tag: "entremets" },
+    { label: "Chocolat", tag: "chocolat" },
+    { label: "Fruits rouges", tag: "fruits rouges" },
+    { label: "Vanille", tag: "vanille" },
+];
 ---
 
-<Layout title="Nos Réalisations - Florent DABERT">
+<Layout title="Mes créations" description="Je rassemble ici mes desserts de restaurant, mes entremets et mes réalisations pâtissières.">
     <section class="py-16 md:py-24 text-center space-y-4 px-4">
         <h1 class="text-4xl md:text-5xl font-serif font-bold text-stone-900">
-            Toutes les Créations
+            Toutes mes créations
         </h1>
         <p class="text-lg text-stone-500 max-w-2xl mx-auto">
-            Parcourez l'ensemble de mes réalisations pâtissières.
+            Je rassemble ici mes desserts de restaurant, mes entremets et mes réalisations pâtissières.
         </p>
     </section>
 
     <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div class="mb-8 flex gap-2 overflow-x-auto pb-2" aria-label="Filtrer les créations">
+            <button class="filter-chip is-active" type="button" data-filter="all">Toutes</button>
+            {filters.map((filter) => <button class="filter-chip" type="button" data-filter={filter.tag}>{filter.label}</button>)}
+        </div>
         <div
             class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
+            data-project-grid
         >
-            {sortedProjects.map((project) => <ProjectCard project={project} />)}
+            {sortedProjects.map((project) => <div data-project-item data-tags={project.data.tags.map((tag) => tag.toLowerCase()).join("|")}><ProjectCard project={project} /></div>)}
         </div>
 
         {
@@ -35,3 +46,16 @@ const sortedProjects = projects.sort(
         }
     </section>
 </Layout>
+
+<script>
+    const buttons = document.querySelectorAll<HTMLButtonElement>("[data-filter]");
+    const items = document.querySelectorAll<HTMLElement>("[data-project-item]");
+    buttons.forEach((button) => button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        buttons.forEach((candidate) => candidate.classList.toggle("is-active", candidate === button));
+        items.forEach((item) => {
+            const tags = (item.dataset.tags || "").split("|");
+            item.hidden = filter !== "all" && !tags.includes(filter || "");
+        });
+    }));
+</script>

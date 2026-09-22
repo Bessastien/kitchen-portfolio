@@ -1,0 +1,20 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import ProjectCard from "../../components/ProjectCard.astro";
+import { getCollection } from "astro:content";
+const projects = (await getCollection("projects")).sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
+const filters = [{ label: "Entremets", tag: "entremets" }, { label: "Chocolate", tag: "chocolat" }, { label: "Red berries", tag: "fruits rouges" }, { label: "Vanilla", tag: "vanille" }];
+---
+<Layout locale="en" title="Creations" description="Explore Florent Dabert's restaurant desserts and pastry creations.">
+  <section class="mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8"><p class="eyebrow">Portfolio</p><h1 class="mt-3 font-serif text-5xl text-stone-950 md:text-6xl">All my creations</h1><p class="mt-5 max-w-2xl text-lg text-stone-600">I bring together my restaurant desserts, entremets and pastry work, created through training, professional settings and personal experimentation.</p><div class="mb-8 mt-10 flex gap-2 overflow-x-auto pb-2" aria-label="Filter creations"><button class="filter-chip is-active" type="button" data-filter="all">All</button>{filters.map((filter) => <button class="filter-chip" type="button" data-filter={filter.tag}>{filter.label}</button>)}</div><div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3" data-project-grid>{projects.map((project) => <div data-project-item data-tags={project.data.tags.map((tag) => tag.toLowerCase()).join("|")}><ProjectCard project={project} locale="en" /></div>)}</div></section>
+</Layout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>("[data-filter]");
+  const items = document.querySelectorAll<HTMLElement>("[data-project-item]");
+  buttons.forEach((button) => button.addEventListener("click", () => {
+    const filter = button.dataset.filter;
+    buttons.forEach((candidate) => candidate.classList.toggle("is-active", candidate === button));
+    items.forEach((item) => { const tags = (item.dataset.tags || "").split("|"); item.hidden = filter !== "all" && !tags.includes(filter || ""); });
+  }));
+</script>

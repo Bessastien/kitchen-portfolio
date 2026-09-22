@@ -1,53 +1,48 @@
 ---
 import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
+import { href, labels, projectTitle, type Locale } from "../lib/site";
 
 interface Props {
   project: CollectionEntry<"projects">;
+  locale?: Locale;
 }
 
-const { project } = Astro.props;
+const { project, locale = "fr" } = Astro.props;
 const mainImage = project.data.mainImage;
 const isImageString = typeof mainImage === "string";
+const title = projectTitle(project, locale);
+const origin = project.data.origin;
 ---
 
 <a
-  href={`/projects/${project.slug}`}
-  class="block group relative overflow-hidden rounded-xl bg-white shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+  href={href(locale, `/projects/${project.slug}`)}
+  class="group block overflow-hidden rounded-3xl bg-white shadow-[0_8px_30px_rgb(55,42,25,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_rgb(55,42,25,0.16)]"
 >
-  <div class="aspect-square w-full overflow-hidden">
+  <div class="aspect-[4/5] w-full overflow-hidden bg-stone-100">
     {
       isImageString ? (
         <img
           src={mainImage}
-          alt={project.data.title}
-          class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          alt={title}
+          class="object-cover w-full h-full transition duration-700 group-hover:scale-105"
           loading="lazy"
         />
       ) : (
         <Image
           src={mainImage}
-          alt={project.data.title}
-          width={600}
-          height={600}
-          class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          alt={title}
+          width={800}
+          height={1000}
+          class="object-cover w-full h-full transition duration-700 group-hover:scale-105"
         />
       )
     }
   </div>
 
-  <div
-    class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6"
-  >
-    <h3
-      class="text-white font-serif text-2xl font-bold translate-y-4 group-hover:translate-y-0 transition-transform duration-300"
-    >
-      {project.data.title}
-    </h3>
-    <p
-      class="text-stone-200 text-sm mt-2 translate-y-4 group-hover:translate-y-0 transition-transform duration-300 delay-75"
-    >
-      {project.data.tags.slice(0, 3).join(", ")}
-    </p>
+  <div class="p-5">
+    {origin && <span class="mb-3 inline-flex rounded-full bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.13em] text-amber-900">{labels[locale].origin[origin]}</span>}
+    <h3 class="font-serif text-2xl leading-tight text-stone-950">{title}</h3>
+    {project.data.tags.length > 0 && <p class="mt-2 text-sm text-stone-500">{project.data.tags.slice(0, 3).join(" · ")}</p>}
   </div>
 </a>

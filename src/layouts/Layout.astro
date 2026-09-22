@@ -2,16 +2,21 @@
 import "../styles/global.css";
 import Navbar from "../components/Navbar.astro";
 import Footer from "../components/Footer.astro";
+import type { Locale } from "../lib/site";
 
 interface Props {
   title: string;
+  description?: string;
+  locale?: Locale;
 }
 
-const { title } = Astro.props;
+const { title, description = "Portfolio de Florent Dabert, pâtissier spécialisé en desserts de restaurant.", locale = "fr" } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const alternate = locale === "fr" ? new URL(`/en${Astro.url.pathname === "/" ? "/" : Astro.url.pathname}`, Astro.site) : new URL(Astro.url.pathname.replace(/^\/en/, "") || "/", Astro.site);
 ---
 
 <!doctype html>
-<html lang="fr" class="scroll-smooth">
+<html lang={locale} class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -19,10 +24,10 @@ const { title } = Astro.props;
     <meta name="generator" content={Astro.generator} />
     
     <!-- SEO Principal -->
-    <title>{title} | Florent DABERT - Pâtissier à Poitiers</title>
+    <title>{title} | Florent Dabert</title>
     <meta
       name="description"
-      content="Florent Dabert, pâtissier professionnel à Poitiers. Découvrez mes créations artisanales, entremets, desserts maison. Disponible pour stages et restauration."
+      content={description}
     />
     <meta
       name="keywords"
@@ -30,21 +35,23 @@ const { title } = Astro.props;
     />
     <meta name="author" content="Florent Dabert" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://florentdabert.bessastien.fr" />
+    <link rel="canonical" href={canonical} />
+    <link rel="alternate" hreflang={locale} href={canonical} />
+    <link rel="alternate" hreflang={locale === "fr" ? "en" : "fr"} href={alternate} />
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://florentdabert.bessastien.fr" />
-    <meta property="og:title" content="Florent DABERT - Pâtissier Professionnel à Poitiers" />
-    <meta property="og:description" content="Découvrez les créations de Florent Dabert, pâtissier passionné à Poitiers. Entremets, desserts maison, stages et restauration." />
-    <meta property="og:locale" content="fr_FR" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:locale" content={locale === "fr" ? "fr_FR" : "en_GB"} />
     <meta property="og:site_name" content="Florent Dabert Pâtisserie" />
     
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://florentdabert.bessastien.fr" />
-    <meta name="twitter:title" content="Florent DABERT - Pâtissier Professionnel à Poitiers" />
-    <meta name="twitter:description" content="Découvrez les créations de Florent Dabert, pâtissier passionné à Poitiers. Entremets, desserts maison, stages et restauration." />
+    <meta name="twitter:url" content={canonical} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     
     <!-- Géolocalisation -->
     <meta name="geo.region" content="FR-86" />
@@ -79,11 +86,11 @@ const { title } = Astro.props;
       }
     </script>
 
-    <!-- Fonts: Playfair Display (Serif) & Inter (Sans) -->
+    <!-- Fonts: Playfair Display (Serif) & DM Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap"
       rel="stylesheet"
     />
 
@@ -92,12 +99,12 @@ const { title } = Astro.props;
       is:inline
       src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
   </head>
-  <body class="bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col">
-    <Navbar />
-    <main class="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <body class="bg-[#fbf8f3] text-stone-800 font-sans min-h-screen flex flex-col">
+    <Navbar locale={locale} />
+    <main class="flex-grow w-full">
       <slot />
     </main>
-    <Footer />
+    <Footer locale={locale} />
 
     <script is:inline>
       // On attend que le script soit bien chargé
