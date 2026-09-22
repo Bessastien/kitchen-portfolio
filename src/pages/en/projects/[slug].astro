@@ -1,0 +1,18 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+import { labels, projectTitle } from "../../../lib/site";
+
+export async function getStaticPaths() {
+  const projects = await getCollection("projects");
+  return projects.map((project) => ({ params: { slug: project.id }, props: { project } }));
+}
+const { project } = Astro.props;
+const image = project.data.mainImage;
+const imageSrc = typeof image === "string" ? image : "";
+const title = projectTitle(project, "en");
+const origin = project.data.origin;
+---
+<Layout locale="en" title={title} description={project.data.descriptionEn || project.data.description || `${title}, a pastry creation by Florent Dabert.`}>
+  <article class="mx-auto max-w-5xl px-4 py-12 sm:px-6 md:py-18 lg:px-8"><a href="/en/projects" class="text-sm font-bold text-amber-900 underline underline-offset-4">All creations</a><header class="mt-8 max-w-3xl"><div class="flex flex-wrap gap-2">{origin && <span class="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-900">{labels.en.origin[origin]}</span>}{project.data.tags.map((tag) => <span class="rounded-full border border-stone-200 px-3 py-1 text-xs text-stone-600">{tag}</span>)}</div><h1 class="mt-5 font-serif text-5xl leading-[.98] text-stone-950 md:text-6xl">{title}</h1>{project.data.descriptionEn && <p class="mt-5 text-lg leading-relaxed text-stone-600">{project.data.descriptionEn}</p>}</header>{imageSrc && <img src={imageSrc} alt={title} class="mt-10 aspect-[4/3] w-full rounded-[2rem] object-cover shadow-xl" />}{project.data.gallery && project.data.gallery.length > 0 && <section class="mt-10 grid gap-5 md:grid-cols-2">{project.data.gallery.map((item, index) => { const src = typeof item === "string" ? item : item.image; return <img src={src} alt={`${title}, detail ${index + 1}`} class="aspect-[4/3] w-full rounded-3xl object-cover" loading="lazy" />; })}</section>}</article>
+</Layout>

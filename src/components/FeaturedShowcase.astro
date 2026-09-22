@@ -1,0 +1,43 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { ArrowUpRight } from "lucide-astro";
+import { href, labels, projectTitle, type Locale } from "../lib/site";
+
+interface Props {
+  projects: CollectionEntry<"projects">[];
+  locale?: Locale;
+}
+
+const { projects, locale = "fr" } = Astro.props;
+---
+
+<div class="featured-rail" aria-label={labels[locale].featured}>
+  {projects.map((project, index) => {
+    const image = project.data.mainImage;
+    const imageSrc = typeof image === "string" ? image : "";
+    const title = projectTitle(project, locale);
+    const origin = project.data.origin;
+    const description = locale === "en"
+      ? project.data.descriptionEn || project.data.description
+      : project.data.description;
+
+    return (
+      <a
+        href={href(locale, `/projects/${project.id}`)}
+        class:list={["featured-piece", { "featured-piece--lead": index === 0 }]}
+      >
+        {imageSrc && <img src={imageSrc} alt={title} loading={index === 0 ? "eager" : "lazy"} />}
+        <span class="featured-shade" aria-hidden="true"></span>
+        <span class="featured-index">{String(index + 1).padStart(2, "0")}</span>
+        <span class="featured-content">
+          <span class="featured-meta">
+            {origin ? labels[locale].origin[origin] : locale === "fr" ? "Création sélectionnée" : "Selected creation"}
+          </span>
+          <strong>{title}</strong>
+          {description && <small>{description}</small>}
+        </span>
+        <span class="featured-arrow"><ArrowUpRight class="size-5" /></span>
+      </a>
+    );
+  })}
+</div>

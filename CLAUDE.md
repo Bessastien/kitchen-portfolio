@@ -18,10 +18,11 @@ Ce fichier contient les conventions, l'architecture et les bonnes pratiques à s
 
 | Couche    | Technologie    | Notes                                        |
 | --------- | -------------- | -------------------------------------------- |
-| Framework | Astro 5        | SSG, content collections                     |
+| Framework | Astro 7        | SSG, content collections                     |
 | Styling   | Tailwind CSS 4 | Nouvelle syntaxe `@import "tailwindcss"`     |
 | Icons     | `lucide-astro` | **PAS** lucide-react (sauf composants React) |
-| CMS       | Decap CMS      | Git-based, config dans `public/admin/`       |
+| Admin     | Studio React   | Route `/studio`, données Supabase            |
+| Backend   | Supabase       | Auth, Postgres, RLS et Storage               |
 | Fonts     | Google Fonts   | Playfair Display + Inter                     |
 
 ### Pattern des composants
@@ -79,11 +80,11 @@ import { Mail } from "lucide-react";
 
 ### Content Collections
 
-Les schémas sont définis dans `src/content/config.ts` avec Zod :
+Les collections historiques sont définies dans `src/content.config.ts` avec Zod et un loader Astro :
 
 ```typescript
 const projects = defineCollection({
-    type: "content",
+    loader: glob({ base: "./src/content/projects", pattern: "**/*.{md,mdx}" }),
     schema: ({ image }) =>
         z.object({
             title: z.string(),
@@ -103,8 +104,9 @@ const projects = defineCollection({
 | `src/pages/`      | Routes du site (file-based routing)   |
 | `src/components/` | Composants réutilisables `.astro`     |
 | `src/layouts/`    | Layouts avec SEO et structure commune |
-| `src/content/`    | Contenu Markdown géré par CMS         |
-| `public/admin/`   | Configuration Decap CMS               |
+| `src/content/`    | Contenu Markdown en cours de migration |
+| `src/components/admin/` | Interface du Studio           |
+| `supabase/`       | Migrations, règles RLS et tests        |
 
 ---
 
@@ -116,17 +118,16 @@ const projects = defineCollection({
 2. Importer le Layout
 3. Ajouter le lien dans Navbar et Footer si nécessaire
 
-### Modifier le schéma CMS
+### Modifier le schéma Supabase
 
-1. Modifier `public/admin/config.yml`
-2. Mettre à jour `src/content/config.ts` en parallèle
-3. Adapter les composants qui utilisent ces données
+1. Créer une migration avec `npx supabase migration new nom`
+2. Tester avec `npx supabase db reset --local` et `npx supabase test db --local`
+3. Adapter le Studio et les types associés
 
 ### Ajouter une collection
 
-1. Ajouter dans `src/content/config.ts`
+1. Ajouter dans `src/content.config.ts`
 2. Créer le dossier `src/content/nom-collection/`
-3. Ajouter dans `public/admin/config.yml`
 
 ---
 
@@ -134,8 +135,8 @@ const projects = defineCollection({
 
 1. **Pas de `lucide-react` dans les fichiers Astro** - utiliser `lucide-astro`
 2. **Syntaxe `class` pas `className`** dans les composants Astro
-3. **Les images CMS** sont uploadées dans `public/uploads/`
-4. **Git Gateway** requis pour le CMS en production
+3. **Les nouvelles images** sont stockées dans le bucket privé Supabase `portfolio-media`
+4. **Ne jamais exposer de clé Supabase secrète** dans une variable `PUBLIC_`
 
 ---
 
@@ -145,10 +146,11 @@ Avant de valider des changements :
 
 ```bash
 # Build de vérification
-bun run build
+npm run check
+npm run build
 
 # Test local
-bun run dev
+npm run dev
 ```
 
 S'assurer que le build passe sans erreurs.

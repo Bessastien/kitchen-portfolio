@@ -1,6 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import ProjectCard from "../components/ProjectCard.astro";
+import FeaturedShowcase from "../components/FeaturedShowcase.astro";
 import { getCollection } from "astro:content";
 import fs from "fs";
 import path from "path";
@@ -27,7 +27,7 @@ try {
 
         // Find matching projects and preserve the order from settings
         const matchedProjects = featuredSlugs
-            .map((slug) => projects.find((p) => p.slug === slug))
+            .map((slug) => projects.find((p) => p.id === slug))
             .filter((p): p is (typeof projects)[number] => p !== undefined);
 
         if (matchedProjects.length > 0) {
@@ -38,53 +38,15 @@ try {
     // Settings file not found or invalid, use default (latest 3)
     console.log("Using default featured projects (latest 3)");
 }
+const heroImage = featuredProjects[0]?.data.mainImage;
+const heroImageSrc = typeof heroImage === "string" ? heroImage : "/uploads/IMG_1882.jpeg";
 ---
 
-<Layout title="Florent DABERT - Portfolio">
-    <!-- Hero Section -->
-    <section class="text-center py-16 md:py-24 space-y-6">
-        <h1
-            class="text-5xl md:text-7xl font-bold font-serif text-stone-900 tracking-tight leading-tight"
-        >
-            L'Art de la<br />
-            <span class="text-amber-700 italic">Pâtisserie</span>
-        </h1>
-        <p
-            class="text-xl md:text-2xl text-stone-500 max-w-2xl mx-auto font-light"
-        >
-            Découvrez une collection de douceurs, d'entremets et de créations
-            uniques.
-        </p>
-    </section>
-
-    <!-- Projects Grid -->
-    <section id="projects" class="py-12">
-        {/* Simple Masonry-like grid using CSS Grid columns */}
-        <div
-            class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-12"
-        >
-            {
-                featuredProjects.map((project) => (
-                    <ProjectCard project={project} />
-                ))
-            }
-        </div>
-
-        {
-            projects.length === 0 ? (
-                <div class="text-center p-12 border-2 border-dashed border-stone-200 rounded-xl">
-                    <p class="text-stone-400">Aucun projet pour le moment.</p>
-                </div>
-            ) : (
-                <div class="text-center">
-                    <a
-                        href="/projects"
-                        class="inline-block border border-stone-900 text-stone-900 px-8 py-3 rounded-full font-medium hover:bg-stone-900 hover:text-white transition-all duration-300 uppercase text-sm tracking-wider"
-                    >
-                        Voir toutes les créations
-                    </a>
-                </div>
-            )
-        }
-    </section>
+<Layout title="Pâtissier · desserts de restaurant" description="Je suis Florent Dabert, pâtissier en formation spécialisé en desserts de restaurant et créations pâtissières.">
+  <section class="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 md:grid-cols-[1.05fr_.95fr] md:items-center md:py-22 lg:px-8">
+    <div class="order-2 md:order-1"><p class="eyebrow">Pâtissier · Poitiers · France</p><h1 class="mt-5 max-w-xl font-serif text-5xl leading-[.95] tracking-tight text-stone-950 sm:text-6xl lg:text-7xl">Je veux faire du dessert <em class="font-normal text-amber-800">le dernier souvenir.</em></h1><p class="mt-6 max-w-lg text-lg leading-relaxed text-stone-600">Je travaille les desserts de restaurant, les entremets et les créations de saison. Je construis ce portfolio au fil de ma formation et de mes expériences.</p><div class="mt-8 flex flex-wrap gap-3"><a class="button-primary" href="#selection">Voir ma sélection</a><a class="button-secondary" href="/journey">Découvrir mon parcours</a></div></div>
+    <div class="order-1 overflow-hidden rounded-[2rem] bg-stone-200 shadow-[0_24px_60px_rgb(60,42,25,0.2)] md:order-2"><img src={heroImageSrc} alt={featuredProjects[0]?.data.title ?? "Création pâtissière de Florent Dabert"} class="aspect-[4/5] h-full w-full object-cover" fetchpriority="high" /></div>
+  </section>
+  <section id="selection" class="border-y border-stone-200 bg-[#f4ede2]"><div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"><div class="mb-8 flex items-end justify-between gap-5"><div><p class="eyebrow">À la une</p><h2 class="mt-2 font-serif text-4xl text-stone-950">Mes créations choisies</h2><p class="mt-3 max-w-xl text-sm leading-relaxed text-stone-600">Faites glisser la sélection sur téléphone pour découvrir les créations mises en avant.</p></div><a href="/projects" class="hidden text-sm font-bold text-amber-900 underline underline-offset-4 sm:block">Tout voir</a></div><FeaturedShowcase projects={featuredProjects} /><div class="mt-6 sm:hidden"><a href="/projects" class="button-secondary w-full">Voir toutes mes créations</a></div></div></section>
+  <section class="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8"><div><p class="eyebrow">Mon parcours évolue</p><h2 class="mt-3 font-serif text-3xl text-stone-950">Apprendre, créer, voyager.</h2></div><p class="text-stone-600">Je prépare actuellement un Certificat de spécialisation Desserts de restaurant au Campus 120. J’y développe une pâtisserie de précision, pensée pour l’assiette, avec l’envie de poursuivre mon parcours à l’international.</p><a href="/contact" class="button-primary self-start md:justify-self-end">Me contacter</a></section>
 </Layout>

@@ -1,23 +1,23 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import { getCollection } from "astro:content";
+import { getCollection, render } from "astro:content";
 import { Image } from "astro:assets";
 
 export async function getStaticPaths() {
   const projects = await getCollection("projects");
   return projects.map((project) => ({
-    params: { slug: project.slug },
+    params: { slug: project.id },
     props: { project },
   }));
 }
 
 const { project } = Astro.props;
-const { Content } = await project.render();
+const { Content } = await render(project);
 const mainImage = project.data.mainImage;
 const isMainImageString = typeof mainImage === "string";
 ---
 
-<Layout title={`${project.data.title} - Chef Pâtissier`}>
+<Layout title={project.data.title} description={project.data.description || `${project.data.title}, une création pâtissière de mon portfolio.`}>
   <article class="max-w-4xl mx-auto">
     <!-- Header -->
     <header class="mb-12 text-center space-y-4">
@@ -38,6 +38,7 @@ const isMainImageString = typeof mainImage === "string";
           })
         }
       </p>
+      {project.data.description && <p class="mx-auto max-w-2xl text-lg leading-relaxed text-stone-600">{project.data.description}</p>}
     </header>
 
     <!-- Main Image -->
