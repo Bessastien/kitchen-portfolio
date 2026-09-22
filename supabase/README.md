@@ -7,7 +7,7 @@ Cette intégration alimente la future administration accessible sur `/studio`. T
 1. Créer un projet Supabase dans une région européenne adaptée.
 2. Copier `.env.example` vers `.env` et renseigner uniquement l'URL du projet et la clé **publishable**. Ne jamais placer la clé `service_role` dans une variable `PUBLIC_`.
 3. Lier le projet avec `npx supabase link`, puis appliquer les migrations avec le workflow Supabase retenu pour l'environnement.
-4. Dans Storage, créer un bucket **privé** nommé `portfolio-media`, avec une taille maximale et les types MIME `image/jpeg`, `image/png`, `image/webp` et `image/avif`.
+4. Le bucket privé `portfolio-media` est créé automatiquement par les migrations, avec une limite de 12 Mio et uniquement les formats JPEG, PNG, WebP et AVIF.
 5. Créer le compte de Florent dans Auth, en inscription sur invitation uniquement.
 6. Attribuer le rôle dans `app_metadata` : `{ "role": "admin" }`. Les rôles acceptés par les politiques RLS sont `admin` et `editor`.
 7. Ajouter les URL locales et Netlify autorisées dans la configuration Auth.

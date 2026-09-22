@@ -14,13 +14,12 @@ Ce projet est un **portfolio pâtisserie** créé pour mon petit frère Florent.
 
 | Technologie                                                     | Version | Description                             |
 | --------------------------------------------------------------- | ------- | --------------------------------------- |
-| [Astro](https://astro.build/)                                   | 5.x     | Framework web statique moderne          |
+| [Astro](https://astro.build/)                                   | 7.x     | Framework web statique moderne          |
 | [Tailwind CSS](https://tailwindcss.com/)                        | 4.x     | Framework CSS utility-first             |
 | [React](https://react.dev/)                                     | 19.x    | Composants interactifs (si nécessaire)  |
-| [Decap CMS](https://decapcms.org/)                              | -       | CMS headless pour la gestion de contenu |
 | [Lucide](https://lucide.dev/)                                   | -       | Icônes SVG élégantes                    |
-| [Netlify Identity](https://docs.netlify.com/security/identity/) | -       | Authentification pour le CMS            |
-| [Supabase](https://supabase.com/)                               | -       | Future administration, données et médias |
+| [Supabase](https://supabase.com/)                               | -       | Authentification, données et médias     |
+| [Netlify](https://www.netlify.com/)                             | -       | Build et hébergement du site            |
 
 ---
 
@@ -29,18 +28,15 @@ Ce projet est un **portfolio pâtisserie** créé pour mon petit frère Florent.
 ```
 kitchen-portfolio/
 ├── public/
-│   ├── admin/              # Configuration Decap CMS
-│   │   ├── config.yml      # Schéma des collections
-│   │   └── index.html      # Page d'admin CMS
-│   ├── uploads/            # Images uploadées via CMS
+│   ├── admin/              # Redirection historique vers /studio
+│   ├── uploads/            # Images historiques du portfolio
 │   └── favicon.svg
 ├── src/
 │   ├── components/         # Composants Astro réutilisables
 │   │   ├── Footer.astro
 │   │   ├── Navbar.astro
 │   │   └── ProjectCard.astro
-│   ├── content/            # Contenu géré par le CMS
-│   │   ├── config.ts       # Schémas Zod des collections
+│   ├── content/            # Contenu historique en cours de migration
 │   │   ├── projects/       # Projets pâtisserie (Markdown)
 │   │   └── settings/       # Paramètres (JSON)
 │   ├── layouts/
@@ -53,6 +49,8 @@ kitchen-portfolio/
 │   │   └── success.astro   # Confirmation message
 │   └── styles/
 │       └── global.css      # Styles Tailwind
+├── supabase/               # Migrations, politiques RLS et tests
+├── netlify.toml            # Build, redirections et en-têtes
 ├── astro.config.mjs        # Configuration Astro
 ├── package.json
 └── tsconfig.json
@@ -74,7 +72,7 @@ kitchen-portfolio/
 ## 🎨 Fonctionnalités
 
 - ✅ **SEO optimisé** - Meta tags, Open Graph, Schema.org
-- ✅ **CMS intégré** - Gestion des projets via Decap CMS
+- ✅ **Studio intégré** - Administration mobile avec Supabase
 - ✅ **Responsive** - Design adapté mobile/tablette/desktop
 - ✅ **Galerie dynamique** - Affichage des projets mis en avant ou récents
 - ✅ **Sitemap automatique** - Généré pour le référencement
@@ -83,13 +81,13 @@ kitchen-portfolio/
 
 ## 📝 Gestion du contenu
 
-L'administration du contenu se fait via **Decap CMS** :
+L'administration du contenu se fait via le **Studio** :
 
-1. Accéder à `/admin` sur le site déployé
-2. Se connecter avec Netlify Identity
-3. Ajouter/modifier des projets avec images et descriptions
+1. Accéder à `/studio` sur le site déployé (`/admin` y redirige également)
+2. Se connecter avec le compte Supabase de Florent
+3. Ajouter, modifier et publier les créations, puis organiser la une
 
-La nouvelle administration mobile est en cours de construction sur `/studio`. Elle fonctionne en aperçu sans configuration et utilisera Supabase Auth, Database et Storage une fois le projet connecté. Elle permet déjà d’ajouter et modifier une création bilingue, de contrôler sa publication, puis de composer la sélection à la une par glisser-déposer. Les instructions se trouvent dans `supabase/README.md`.
+Le Studio fonctionne en aperçu sans configuration. Une fois le projet distant connecté, il utilise Supabase Auth, Database et Storage. Le site public continue temporairement de lire les fichiers Markdown jusqu’à la migration complète des créations. Les instructions se trouvent dans `supabase/README.md`.
 
 ---
 
@@ -98,9 +96,9 @@ La nouvelle administration mobile est en cours de construction sur `/studio`. El
 Ce site est conçu pour être déployé sur **Netlify** :
 
 1. Connecter le repository à Netlify
-2. Activer Netlify Identity
-3. Activer Git Gateway dans les paramètres Identity
-4. Le site se déploie automatiquement à chaque push
+2. Définir `PUBLIC_SUPABASE_URL` et `PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+3. Appliquer les migrations Supabase
+4. Déployer le site avec les paramètres de `netlify.toml`
 
 ---
 
