@@ -107,6 +107,8 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
   const [titleEn, setTitleEn] = useState("");
   const [origin, setOrigin] = useState<ProjectOrigin>("campus120");
   const [file, setFile] = useState<File | null>(null);
+  const [keepDraft, setKeepDraft] = useState(false);
+  const [authorized, setAuthorized] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -114,9 +116,20 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     event.preventDefault();
     setBusy(true);
     setError("");
+    const status = keepDraft ? "draft" : "published";
+    if (!keepDraft && !authorized) {
+      setError("Confirme que tu as le droit de publier cette création et sa photo.");
+      setBusy(false);
+      return;
+    }
+    if (!keepDraft && !file) {
+      setError("Ajoute une photo principale avant de publier.");
+      setBusy(false);
+      return;
+    }
 
     if (!client) {
-      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, description_fr: null, description_en: null, image_alt_fr: null, image_alt_en: null, tags: [], main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status: "draft", publication_authorized: false, published_at: null });
+      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, description_fr: null, description_en: null, image_alt_fr: null, image_alt_en: null, tags: [], main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null });
       onClose();
       return;
     }
@@ -138,7 +151,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     }
 
     const slug = `${slugify(titleFr)}-${crypto.randomUUID().slice(0, 6)}`;
-    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, origin, status: "draft", main_image_path: imagePath }).select(projectSelect).single();
+    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null, main_image_path: imagePath }).select(projectSelect).single();
     if (result.error) {
       setError("La création n’a pas pu être enregistrée. Elle reste à compléter.");
       setBusy(false);
@@ -151,7 +164,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
           client.storage.from("portfolio-media").remove([imagePath]),
           client.from("projects").delete().eq("id", result.data.id),
         ]);
-        setError("La photo n’a pas pu être rattachée au brouillon. Rien n’a été publié.");
+        setError("La photo n’a pas pu être rattachée à la création. Rien n’a été publié.");
         setBusy(false);
         return;
       }
@@ -168,9 +181,10 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
         <label className="mt-5 block text-sm font-bold">Nom du dessert en français<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleFr} onChange={(event) => setTitleFr(event.target.value)} required /></label>
         <label className="mt-4 block text-sm font-bold">Nom en anglais <span className="font-normal text-stone-400">(optionnel)</span><input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleEn} onChange={(event) => setTitleEn(event.target.value)} /></label>
         <label className="mt-4 block text-sm font-bold">Contexte<select className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={origin} onChange={(event) => setOrigin(event.target.value as ProjectOrigin)}>{Object.entries(originLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-        <p className="mt-4 rounded-xl bg-stone-100 p-3 text-xs leading-relaxed text-stone-600">La création sera enregistrée en brouillon. Je pourrai compléter sa description et vérifier l’autorisation de publication avant de la rendre publique.</p>
+        <label className="mt-5 flex cursor-pointer gap-3 rounded-2xl border border-stone-200 bg-white p-4"><input type="checkbox" className="mt-1 size-5 accent-amber-800" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} /><span><strong className="text-sm">J’ai le droit de publier cette création et sa photo</strong><small className="mt-1 block leading-relaxed text-stone-500">Je vérifie l’accord nécessaire si elle vient de l’école ou d’une entreprise.</small></span></label>
+        <label className="mt-3 flex cursor-pointer gap-3 rounded-2xl bg-stone-100 p-4"><input type="checkbox" className="mt-1 size-5 accent-amber-800" checked={keepDraft} onChange={(event) => setKeepDraft(event.target.checked)} /><span><strong className="text-sm">Garder en brouillon</strong><small className="mt-1 block leading-relaxed text-stone-500">À cocher seulement si je ne veux pas publier tout de suite.</small></span></label>
         {error && <p className="mt-4 text-sm text-red-700" role="alert">{error}</p>}
-        <button type="submit" className="button-primary mt-auto w-full gap-2 sm:mt-7" disabled={busy}><Save className="size-4" />{busy ? "Enregistrement…" : "Enregistrer le brouillon"}</button>
+        <button type="submit" className="button-primary mt-auto w-full gap-2 sm:mt-7" disabled={busy}><Save className="size-4" />{busy ? "Enregistrement…" : keepDraft ? "Enregistrer le brouillon" : "Publier la création"}</button>
       </form>
     </div>
   );
