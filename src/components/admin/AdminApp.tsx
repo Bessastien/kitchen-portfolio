@@ -32,12 +32,12 @@ type SiteSection = {
   settings: Record<string, string | null>;
 };
 
-type HeroSettings = Record<"eyebrow_fr" | "title_fr" | "body_fr" | "eyebrow_en" | "title_en" | "body_en" | "hero_image_url" | "hero_image_alt_fr" | "hero_image_alt_en" | "portrait_image_url" | "portrait_image_alt", string | null>;
+type HeroSettings = Record<"eyebrow_fr" | "title_fr" | "body_fr" | "eyebrow_en" | "title_en" | "body_en" | "hero_image_url" | "hero_image_alt_fr" | "hero_image_alt_en" | "portrait_image_url" | "portrait_image_alt" | "portrait_x" | "portrait_y", string | null>;
 
 const defaultHeroSettings: HeroSettings = {
   eyebrow_fr: "Pâtissier · Poitiers · France", title_fr: "Je veux faire du dessert le dernier souvenir.", body_fr: "Je travaille les desserts de restaurant, les entremets et les créations de saison. Je construis ce portfolio au fil de ma formation et de mes expériences.",
   eyebrow_en: "Pastry chef · Poitiers · France", title_en: "I want dessert to become the lasting memory.", body_en: "I create restaurant desserts, entremets and seasonal pastries. This portfolio grows alongside my training and professional experience.",
-  hero_image_url: "/uploads/IMG_1882.jpeg", hero_image_alt_fr: "Entremets aux agrumes de Florent Dabert", hero_image_alt_en: "Florent Dabert citrus entremets", portrait_image_url: null, portrait_image_alt: "Florent Dabert",
+  hero_image_url: "/uploads/IMG_1882.jpeg", hero_image_alt_fr: "Entremets aux agrumes de Florent Dabert", hero_image_alt_en: "Florent Dabert citrus entremets", portrait_image_url: null, portrait_image_alt: "Florent Dabert", portrait_x: "50", portrait_y: "50",
 };
 
 const demoSections: SiteSection[] = [
@@ -89,8 +89,9 @@ function HomeContentEditor({ section, onSaved }: { section: SiteSection; onSaved
     </div>
     <div className="mt-5 grid gap-4 sm:grid-cols-2">
       <label className="block text-sm font-bold">Grande image d’accueil<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{settings.hero_image_url ? <img src={settings.hero_image_url} alt="" className="h-24 w-24 rounded-xl object-cover" /> : <Camera className="size-5" />}<span>Prendre ou choisir une photo<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="environment" onChange={(event) => void upload("hero", event.target.files?.[0])} /></span></span></label>
-      <label className="block text-sm font-bold">Ma photo ronde (remplace FD)<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{settings.portrait_image_url ? <img src={settings.portrait_image_url} alt="" className="size-20 rounded-full object-cover" /> : <UserRound className="size-5" />}<span>Prendre ou choisir une photo<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="user" onChange={(event) => void upload("portrait", event.target.files?.[0])} /></span></span></label>
+      <label className="block text-sm font-bold">Ma photo ronde (remplace FD)<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{settings.portrait_image_url ? <img src={settings.portrait_image_url} alt="" style={{ objectPosition: `${settings.portrait_x || "50"}% ${settings.portrait_y || "50"}%` }} className="size-20 rounded-full object-cover" /> : <UserRound className="size-5" />}<span>Prendre ou choisir une photo<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="user" onChange={(event) => void upload("portrait", event.target.files?.[0])} /></span></span></label>
     </div>
+    {settings.portrait_image_url && <div className="mt-4 rounded-2xl bg-stone-100 p-4"><p className="text-sm font-bold">Recentrer la photo ronde</p><div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-sm">Gauche / droite<input className="mt-2 w-full accent-amber-800" type="range" min="0" max="100" value={settings.portrait_x || "50"} onChange={(event) => change("portrait_x", event.target.value)} /></label><label className="text-sm">Haut / bas<input className="mt-2 w-full accent-amber-800" type="range" min="0" max="100" value={settings.portrait_y || "50"} onChange={(event) => change("portrait_y", event.target.value)} /></label></div></div>}
     {message && <p className="mt-4 text-sm text-stone-600" role="status">{message}</p>}
     <button type="button" className="button-primary mt-5 w-full gap-2" onClick={() => void save()} disabled={busy}><Save className="size-4" />{busy ? "Enregistrement…" : "Enregistrer l’accueil"}</button>
   </section>;

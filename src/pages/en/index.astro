@@ -1,10 +1,11 @@
 ---
 import Layout from "../../layouts/Layout.astro";
-import FeaturedShowcase from "../../components/FeaturedShowcase.astro";
+import FeaturedShowcase from "../../components/FeaturedShowcase";
 import { getCollection } from "astro:content";
 import fs from "fs";
 import path from "path";
 import HomeHero from "../../components/HomeHero";
+import HomepageSectionControls from "../../components/HomepageSectionControls";
 const projects = await getCollection("projects");
 const sortedProjects = projects.sort((a, b) => b.data.publishDate.valueOf() - a.data.publishDate.valueOf());
 let featured = sortedProjects.slice(0, 3);
@@ -21,9 +22,11 @@ const heroFallback = {
   eyebrow_en: "Pastry chef · Poitiers · France", title_en: "I want dessert to become the lasting memory.", body_en: "I create restaurant desserts, entremets and seasonal pastries. This portfolio grows alongside my training and professional experience.",
   hero_image_url: typeof hero === "string" ? hero : "/uploads/IMG_1882.jpeg", hero_image_alt_fr: featured[0]?.data.title ?? "Création pâtissière de Florent Dabert", hero_image_alt_en: featured[0]?.data.titleEn ?? "Florent Dabert pastry creation",
 };
+const featuredFallback = featured.map((project) => ({ id: project.id, title_fr: project.data.title, title_en: project.data.titleEn || null, description_fr: project.data.description || null, description_en: project.data.descriptionEn || null, main_image_url: typeof project.data.mainImage === "string" ? project.data.mainImage : null, origin: project.data.origin || null }));
 ---
 <Layout locale="en" title="Pastry chef · restaurant desserts" description="I am Florent Dabert, a pastry chef in training specialising in restaurant desserts and seasonal creations.">
   <HomeHero client:load locale="en" fallback={heroFallback} />
-  <section id="selection" class="border-y border-stone-200 bg-[#f4ede2]"><div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"><p class="eyebrow">Selected work</p><h2 class="mt-2 font-serif text-4xl text-stone-950">My featured creations</h2><p class="mb-8 mt-3 max-w-xl text-sm leading-relaxed text-stone-600">Swipe the selection on mobile to discover the work I have chosen to feature.</p><FeaturedShowcase projects={featured} locale="en" /></div></section>
-  <section class="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8"><div><p class="eyebrow">My journey in motion</p><h2 class="mt-3 font-serif text-3xl text-stone-950">Learn, create, travel.</h2></div><p class="text-stone-600">I am currently completing a specialist certificate in restaurant desserts at Campus 120. I am developing a precise pastry style designed for the plate, with the ambition to continue my journey internationally.</p><a href="/en/contact" class="button-primary self-start md:justify-self-end">Contact me</a></section>
+  <FeaturedShowcase client:load locale="en" fallback={featuredFallback} />
+  <section data-home-section="journey" class="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8"><div><p class="eyebrow">My journey in motion</p><h2 class="mt-3 font-serif text-3xl text-stone-950">Learn, create, travel.</h2></div><p class="text-stone-600">I am currently completing a specialist certificate in restaurant desserts at Campus 120. I am developing a precise pastry style designed for the plate, with the ambition to continue my journey internationally.</p><a href="/en/contact" class="button-primary self-start md:justify-self-end">Contact me</a></section>
+  <HomepageSectionControls client:load />
 </Layout>

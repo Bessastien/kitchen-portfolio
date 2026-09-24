@@ -173,10 +173,10 @@ on public.homepage_featured for delete
 to authenticated
 using ((select auth.jwt() -> 'app_metadata' ->> 'role') in ('admin', 'editor'));
 
-create policy "Enabled site sections are public"
+create policy "Site section layout is public"
 on public.site_sections for select
 to anon, authenticated
-using (enabled = true);
+using (true);
 
 create policy "Editors can read all site sections"
 on public.site_sections for select
