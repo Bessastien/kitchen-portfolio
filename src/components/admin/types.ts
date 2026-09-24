@@ -12,14 +12,14 @@ export type AdminProject = {
   image_alt_en: string | null;
   tags: string[];
   main_image_path: string | null;
-  main_image_url?: string | null;
+  main_image_url: string | null;
   origin: ProjectOrigin | null;
   status: ProjectStatus;
   publication_authorized: boolean;
   published_at: string | null;
 };
 
-export const projectSelect = "id,title_fr,title_en,description_fr,description_en,image_alt_fr,image_alt_en,tags,main_image_path,origin,status,publication_authorized,published_at";
+export const projectSelect = "id,title_fr,title_en,description_fr,description_en,image_alt_fr,image_alt_en,tags,main_image_path,main_image_url,origin,status,publication_authorized,published_at";
 
 export const originLabels: Record<ProjectOrigin, string> = {
   campus120: "Campus 120",

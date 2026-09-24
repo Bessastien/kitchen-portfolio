@@ -17,7 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { Camera, Eye, GripVertical, ImagePlus, LogOut, Pencil, Plus, Save, Sparkles, X } from "lucide-react";
+import { Camera, Eye, GripVertical, ImagePlus, LogOut, Pencil, Plus, Save, Sparkles, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 import ProjectEditor from "./ProjectEditor";
 import { demoProjects, originLabels, projectSelect, type AdminProject, type ProjectOrigin } from "./types";
@@ -29,14 +29,72 @@ type SiteSection = {
   enabled: boolean;
   position: number;
   variant: "hero" | "editorial" | "grid" | "timeline" | "contact";
+  settings: Record<string, string | null>;
+};
+
+type HeroSettings = Record<"eyebrow_fr" | "title_fr" | "body_fr" | "eyebrow_en" | "title_en" | "body_en" | "hero_image_url" | "hero_image_alt_fr" | "hero_image_alt_en" | "portrait_image_url" | "portrait_image_alt", string | null>;
+
+const defaultHeroSettings: HeroSettings = {
+  eyebrow_fr: "Pâtissier · Poitiers · France", title_fr: "Je veux faire du dessert le dernier souvenir.", body_fr: "Je travaille les desserts de restaurant, les entremets et les créations de saison. Je construis ce portfolio au fil de ma formation et de mes expériences.",
+  eyebrow_en: "Pastry chef · Poitiers · France", title_en: "I want dessert to become the lasting memory.", body_en: "I create restaurant desserts, entremets and seasonal pastries. This portfolio grows alongside my training and professional experience.",
+  hero_image_url: "/uploads/IMG_1882.jpeg", hero_image_alt_fr: "Entremets aux agrumes de Florent Dabert", hero_image_alt_en: "Florent Dabert citrus entremets", portrait_image_url: null, portrait_image_alt: "Florent Dabert",
 };
 
 const demoSections: SiteSection[] = [
-  { id: "hero", title_fr: "Introduction", title_en: "Introduction", enabled: true, position: 0, variant: "hero" },
-  { id: "featured", title_fr: "À la une", title_en: "Featured work", enabled: true, position: 1, variant: "editorial" },
-  { id: "journey", title_fr: "Mon parcours", title_en: "My journey", enabled: true, position: 2, variant: "timeline" },
-  { id: "contact", title_fr: "Contact", title_en: "Contact", enabled: true, position: 3, variant: "contact" },
+  { id: "hero", title_fr: "Introduction", title_en: "Introduction", enabled: true, position: 0, variant: "hero", settings: defaultHeroSettings },
+  { id: "featured", title_fr: "À la une", title_en: "Featured work", enabled: true, position: 1, variant: "editorial", settings: {} },
+  { id: "journey", title_fr: "Mon parcours", title_en: "My journey", enabled: true, position: 2, variant: "timeline", settings: {} },
+  { id: "contact", title_fr: "Contact", title_en: "Contact", enabled: true, position: 3, variant: "contact", settings: {} },
 ];
+
+function HomeContentEditor({ section, onSaved }: { section: SiteSection; onSaved: (settings: HeroSettings) => void }) {
+  const client = useMemo(() => getSupabaseBrowserClient(), []);
+  const [settings, setSettings] = useState<HeroSettings>({ ...defaultHeroSettings, ...(section.settings as HeroSettings) });
+  const [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState("");
+
+  function change(key: keyof HeroSettings, value: string) { setSettings((current) => ({ ...current, [key]: value || null })); }
+
+  async function upload(kind: "hero" | "portrait", file: File | undefined) {
+    if (!file || !client) return;
+    setBusy(true); setMessage("");
+    const extension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+    const path = `home/${kind}-${crypto.randomUUID()}.${extension}`;
+    const result = await client.storage.from("site-assets").upload(path, file, { cacheControl: "31536000", upsert: false });
+    if (result.error) { setMessage("La photo n’a pas pu être envoyée."); setBusy(false); return; }
+    const { data } = client.storage.from("site-assets").getPublicUrl(path);
+    change(kind === "hero" ? "hero_image_url" : "portrait_image_url", data.publicUrl);
+    setBusy(false); setMessage("Photo ajoutée. Enregistre l’accueil pour la publier.");
+  }
+
+  async function save() {
+    if (!client) { setMessage("Connecte Supabase pour enregistrer ces changements."); return; }
+    setBusy(true); setMessage("");
+    const { error } = await client.from("site_sections").update({ settings }).eq("id", "hero");
+    setBusy(false);
+    if (error) { setMessage("Les textes n’ont pas pu être enregistrés."); return; }
+    onSaved(settings); setMessage("L’accueil est enregistré. Il se met à jour sur le site.");
+  }
+
+  const input = "mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700";
+  return <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
+    <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Identité et accueil</p><h2 className="mt-1 font-serif text-3xl">Mon introduction</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je modifie les textes français/anglais, la grande image d’accueil et ma photo ronde dans la barre du site.</p></div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <label className="block text-sm font-bold">Accroche FR<input className={input} value={settings.eyebrow_fr || ""} onChange={(event) => change("eyebrow_fr", event.target.value)} /></label>
+      <label className="block text-sm font-bold">Accroche EN<input className={input} value={settings.eyebrow_en || ""} onChange={(event) => change("eyebrow_en", event.target.value)} /></label>
+      <label className="block text-sm font-bold">Grand titre FR<textarea className={`${input} min-h-24 py-3`} value={settings.title_fr || ""} onChange={(event) => change("title_fr", event.target.value)} /></label>
+      <label className="block text-sm font-bold">Grand titre EN<textarea className={`${input} min-h-24 py-3`} value={settings.title_en || ""} onChange={(event) => change("title_en", event.target.value)} /></label>
+      <label className="block text-sm font-bold">Texte FR<textarea className={`${input} min-h-28 py-3`} value={settings.body_fr || ""} onChange={(event) => change("body_fr", event.target.value)} /></label>
+      <label className="block text-sm font-bold">Texte EN<textarea className={`${input} min-h-28 py-3`} value={settings.body_en || ""} onChange={(event) => change("body_en", event.target.value)} /></label>
+    </div>
+    <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <label className="block text-sm font-bold">Grande image d’accueil<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{settings.hero_image_url ? <img src={settings.hero_image_url} alt="" className="h-24 w-24 rounded-xl object-cover" /> : <Camera className="size-5" />}<span>Prendre ou choisir une photo<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="environment" onChange={(event) => void upload("hero", event.target.files?.[0])} /></span></span></label>
+      <label className="block text-sm font-bold">Ma photo ronde (remplace FD)<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{settings.portrait_image_url ? <img src={settings.portrait_image_url} alt="" className="size-20 rounded-full object-cover" /> : <UserRound className="size-5" />}<span>Prendre ou choisir une photo<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="user" onChange={(event) => void upload("portrait", event.target.files?.[0])} /></span></span></label>
+    </div>
+    {message && <p className="mt-4 text-sm text-stone-600" role="status">{message}</p>}
+    <button type="button" className="button-primary mt-5 w-full gap-2" onClick={() => void save()} disabled={busy}><Save className="size-4" />{busy ? "Enregistrement…" : "Enregistrer l’accueil"}</button>
+  </section>;
+}
 
 function slugify(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -227,23 +285,41 @@ export default function AdminApp() {
 
   useEffect(() => {
     if (!client || !authenticated) return;
-    Promise.all([
-      client.from("projects").select(projectSelect).order("updated_at", { ascending: false }),
-      client.from("homepage_featured").select("project_id,position").order("position"),
-      client.from("site_sections").select("id,title_fr,title_en,enabled,position,variant").order("position"),
-    ]).then(([projectResult, featuredResult, sectionResult]) => {
-      if (projectResult.error || featuredResult.error || sectionResult.error) {
+    const activeClient = client;
+    async function loadContent() {
+      const initialProjectResult = await activeClient.from("projects").select(projectSelect).order("updated_at", { ascending: false });
+      let projectData: Array<Omit<AdminProject, "main_image_url"> & { main_image_url?: string | null }> | null = initialProjectResult.data;
+      // The published site remains usable while the database migration is being
+      // rolled out: the only missing field on the former schema is the public
+      // URL used for the portfolio imported from /public/uploads.
+      if (initialProjectResult.error?.message.includes("main_image_url")) {
+        const legacyProjectResult = await activeClient.from("projects").select("id,title_fr,title_en,description_fr,description_en,image_alt_fr,image_alt_en,tags,main_image_path,origin,status,publication_authorized,published_at").order("updated_at", { ascending: false });
+        if (legacyProjectResult.error) {
+          setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
+          return;
+        }
+        projectData = legacyProjectResult.data;
+      } else if (initialProjectResult.error) {
         setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
         return;
       }
-      Promise.all((projectResult.data as AdminProject[]).map(async (project) => {
+      const [featuredResult, sectionResult] = await Promise.all([
+        activeClient.from("homepage_featured").select("project_id,position").order("position"),
+        activeClient.from("site_sections").select("id,title_fr,title_en,enabled,position,variant,settings").order("position"),
+      ]);
+      if (!projectData || featuredResult.error || sectionResult.error) {
+        setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
+        return;
+      }
+      Promise.all(projectData.map(async (project) => {
         if (!project.main_image_path) return project;
-        const signed = await client.storage.from("portfolio-media").createSignedUrl(project.main_image_path, 3600);
-        return { ...project, main_image_url: signed.data?.signedUrl || null };
-      })).then(setProjects);
+        const signed = await activeClient.storage.from("portfolio-media").createSignedUrl(project.main_image_path, 3600);
+        return { ...project, main_image_url: signed.data?.signedUrl || project.main_image_url || null };
+      })).then((loadedProjects) => setProjects(loadedProjects.map((project) => ({ ...project, main_image_url: project.main_image_url || null }))));
       setFeaturedIds(featuredResult.data.map((item) => item.project_id));
       setSections(sectionResult.data as SiteSection[]);
-    });
+    }
+    void loadContent();
   }, [client, authenticated]);
 
   const featuredProjects = featuredIds.map((id) => projects.find((project) => project.id === id)).filter((project): project is AdminProject => Boolean(project));
@@ -326,6 +402,8 @@ export default function AdminApp() {
           <button type="button" onClick={() => setCreating(true)} className="flex min-h-24 items-center gap-4 rounded-3xl bg-stone-950 p-5 text-left text-white"><span className="grid size-12 place-items-center rounded-full bg-white/10"><ImagePlus className="size-6" /></span><span><strong className="block text-lg">Ajouter une création</strong><small className="text-stone-300">Photo, titre et contexte</small></span></button>
           <div className="flex min-h-24 items-center gap-4 rounded-3xl border border-stone-200 bg-white p-5"><span className="grid size-12 place-items-center rounded-full bg-amber-100 text-amber-900"><Sparkles className="size-6" /></span><span><strong className="block text-lg">{projects.length} créations</strong><small className="text-stone-500">{projects.filter((project) => project.status === "published").length} publiées</small></span></div>
         </section>
+
+        <HomeContentEditor section={sections.find((section) => section.id === "hero") || demoSections[0]} onSaved={(settings) => setSections((current) => current.map((section) => section.id === "hero" ? { ...section, settings } : section))} />
 
         <section className="mt-8 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
           <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Page d’accueil · {featuredIds.length}/6</p><h2 className="mt-1 font-serif text-3xl">Ma sélection à la une</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je maintiens la poignée pour changer l’ordre. Je peux retirer une création avec la croix et en ajouter depuis « Mes créations ».</p></div>
