@@ -20,6 +20,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { Camera, Eye, GripVertical, ImagePlus, LogOut, Pencil, Plus, Save, Sparkles, UserRound, X } from "lucide-react";
 import { getSupabaseBrowserClient, isSupabaseConfigured } from "../../lib/supabase-browser";
 import ProjectEditor from "./ProjectEditor";
+import JourneyEditor from "./JourneyEditor";
 import { demoProjects, originLabels, projectSelect, type AdminProject, type ProjectOrigin } from "./types";
 
 type SiteSection = {
@@ -29,7 +30,7 @@ type SiteSection = {
   enabled: boolean;
   position: number;
   variant: "hero" | "editorial" | "grid" | "timeline" | "contact";
-  settings: Record<string, string | null>;
+  settings: Record<string, unknown>;
 };
 
 type HeroSettings = Record<"eyebrow_fr" | "title_fr" | "body_fr" | "eyebrow_en" | "title_en" | "body_en" | "hero_image_url" | "hero_image_alt_fr" | "hero_image_alt_en" | "portrait_image_url" | "portrait_image_alt" | "portrait_x" | "portrait_y", string | null>;
@@ -101,10 +102,19 @@ function slugify(value: string) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
+function listFromInput(value: string) {
+  return [...new Set(value.split(",").map((item) => item.trim().toLocaleLowerCase("fr")).filter(Boolean))];
+}
+
 function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCreated: (project: AdminProject) => void }) {
   const client = useMemo(() => getSupabaseBrowserClient(), []);
   const [titleFr, setTitleFr] = useState("");
   const [titleEn, setTitleEn] = useState("");
+  const [descriptionFr, setDescriptionFr] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
+  const [altFr, setAltFr] = useState("");
+  const [altEn, setAltEn] = useState("");
+  const [tags, setTags] = useState("");
   const [origin, setOrigin] = useState<ProjectOrigin>("campus120");
   const [file, setFile] = useState<File | null>(null);
   const [keepDraft, setKeepDraft] = useState(false);
@@ -129,7 +139,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     }
 
     if (!client) {
-      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, description_fr: null, description_en: null, image_alt_fr: null, image_alt_en: null, tags: [], main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null });
+      onCreated({ id: crypto.randomUUID(), title_fr: titleFr, title_en: titleEn || null, description_fr: descriptionFr || null, description_en: descriptionEn || null, image_alt_fr: altFr || null, image_alt_en: altEn || null, tags: listFromInput(tags), main_image_path: null, main_image_url: file ? URL.createObjectURL(file) : null, origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null });
       onClose();
       return;
     }
@@ -151,7 +161,7 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
     }
 
     const slug = `${slugify(titleFr)}-${crypto.randomUUID().slice(0, 6)}`;
-    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null, main_image_path: imagePath }).select(projectSelect).single();
+    const result = await client.from("projects").insert({ slug, title_fr: titleFr, title_en: titleEn || null, description_fr: descriptionFr || null, description_en: descriptionEn || null, image_alt_fr: altFr || null, image_alt_en: altEn || null, tags: listFromInput(tags), origin, status, publication_authorized: authorized, published_at: status === "published" ? new Date().toISOString() : null, main_image_path: imagePath }).select(projectSelect).single();
     if (result.error) {
       setError("La création n’a pas pu être enregistrée. Elle reste à compléter.");
       setBusy(false);
@@ -180,7 +190,10 @@ function CreateProjectSheet({ onClose, onCreated }: { onClose: () => void; onCre
         <label className="mt-7 block text-sm font-bold">Photo principale<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600"><Camera className="size-5" />{file ? file.name : "Prendre ou choisir une photo"}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="environment" onChange={(event) => setFile(event.target.files?.[0] || null)} /></span></label>
         <label className="mt-5 block text-sm font-bold">Nom du dessert en français<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleFr} onChange={(event) => setTitleFr(event.target.value)} required /></label>
         <label className="mt-4 block text-sm font-bold">Nom en anglais <span className="font-normal text-stone-400">(optionnel)</span><input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={titleEn} onChange={(event) => setTitleEn(event.target.value)} /></label>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2"><label className="block text-sm font-bold">Présentation en français<textarea className="mt-2 min-h-28 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 font-normal outline-none focus:border-amber-700" value={descriptionFr} onChange={(event) => setDescriptionFr(event.target.value)} /></label><label className="block text-sm font-bold">Présentation en anglais<textarea className="mt-2 min-h-28 w-full rounded-xl border border-stone-300 bg-white px-4 py-3 font-normal outline-none focus:border-amber-700" value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} /></label></div>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2"><label className="block text-sm font-bold">Description de la photo en français<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={altFr} onChange={(event) => setAltFr(event.target.value)} placeholder="Ce que montre la photo" /></label><label className="block text-sm font-bold">Description de la photo en anglais<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={altEn} onChange={(event) => setAltEn(event.target.value)} /></label></div>
         <label className="mt-4 block text-sm font-bold">Contexte<select className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={origin} onChange={(event) => setOrigin(event.target.value as ProjectOrigin)}>{Object.entries(originLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
+        <label className="mt-4 block text-sm font-bold">Mots-clés<input className="mt-2 min-h-12 w-full rounded-xl border border-stone-300 bg-white px-4 font-normal outline-none focus:border-amber-700" value={tags} onChange={(event) => setTags(event.target.value)} placeholder="chocolat, agrumes, dressage" /><small className="mt-1 block font-normal text-stone-500">Séparés par des virgules</small></label>
         <label className="mt-5 flex cursor-pointer gap-3 rounded-2xl border border-stone-200 bg-white p-4"><input type="checkbox" className="mt-1 size-5 accent-amber-800" checked={authorized} onChange={(event) => setAuthorized(event.target.checked)} /><span><strong className="text-sm">J’ai le droit de publier cette création et sa photo</strong><small className="mt-1 block leading-relaxed text-stone-500">Je vérifie l’accord nécessaire si elle vient de l’école ou d’une entreprise.</small></span></label>
         <label className="mt-3 flex cursor-pointer gap-3 rounded-2xl bg-stone-100 p-4"><input type="checkbox" className="mt-1 size-5 accent-amber-800" checked={keepDraft} onChange={(event) => setKeepDraft(event.target.checked)} /><span><strong className="text-sm">Garder en brouillon</strong><small className="mt-1 block leading-relaxed text-stone-500">À cocher seulement si je ne veux pas publier tout de suite.</small></span></label>
         {error && <p className="mt-4 text-sm text-red-700" role="alert">{error}</p>}
@@ -449,6 +462,7 @@ export default function AdminApp() {
           <button type="button" className="button-secondary mt-5 w-full gap-2" onClick={saveSections} disabled={saving}><Save className="size-4" />Enregistrer les sections</button>
         </section>
         }
+        {activeArea === "settings" && <JourneyEditor settings={sections.find((section) => section.id === "journey")?.settings || {}} />}
       </div>
       {creating && <CreateProjectSheet onClose={() => setCreating(false)} onCreated={(project) => { setProjects((current) => [project, ...current]); setNotice("Le brouillon a été ajouté."); }} />}
       {editing && <ProjectEditor project={editing} onClose={() => setEditing(null)} onSaved={(project, message) => { setProjects((current) => current.map((item) => item.id === project.id ? project : item)); if (project.status !== "published") setFeaturedIds((current) => current.filter((id) => id !== project.id)); setEditing(null); setNotice(message); }} />}

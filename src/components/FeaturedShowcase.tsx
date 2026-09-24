@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getSupabaseBrowserClient } from "../lib/supabase-browser";
 
 type Locale = "fr" | "en";
-type FeaturedProject = { id: string; title_fr: string; title_en: string | null; description_fr: string | null; description_en: string | null; main_image_url: string | null; origin: string | null };
+type FeaturedProject = { id: string; title_fr: string; title_en: string | null; description_fr: string | null; description_en: string | null; main_image_url: string | null; main_image_path?: string | null; origin: string | null };
 
 const originLabels: Record<Locale, Record<string, string>> = {
   fr: { campus120: "Campus 120", "cheval-blanc": "Cheval Blanc", personal: "Création personnelle", other: "Autre" },
@@ -17,12 +17,16 @@ export default function FeaturedShowcase({ locale, fallback }: { locale: Locale;
   useEffect(() => {
     if (!client) return;
     Promise.all([
-      client.from("homepage_featured").select("position,projects(id,title_fr,title_en,description_fr,description_en,main_image_url,origin)").order("position"),
+      client.from("homepage_featured").select("position,projects(id,title_fr,title_en,description_fr,description_en,main_image_url,main_image_path,origin)").order("position"),
       client.from("site_sections").select("enabled").eq("id", "featured").maybeSingle(),
     ]).then(([featured, section]) => {
       if (section.data) setEnabled(section.data.enabled);
       if (!featured.error && featured.data?.length) {
-        setProjects(featured.data.flatMap((item) => item.projects as FeaturedProject[]).filter(Boolean));
+        Promise.all(featured.data.flatMap((item) => item.projects as FeaturedProject[]).filter(Boolean).map(async (project) => {
+          if (!project.main_image_path) return project;
+          const signed = await client.storage.from("portfolio-media").createSignedUrl(project.main_image_path, 3600);
+          return { ...project, main_image_url: signed.data?.signedUrl || project.main_image_url };
+        })).then(setProjects);
       }
     });
   }, [client]);

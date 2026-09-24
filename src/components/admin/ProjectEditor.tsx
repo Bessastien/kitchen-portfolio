@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { Archive, CheckCircle2, EyeOff, Save, ShieldCheck, X } from "lucide-react";
+import { Archive, Camera, CheckCircle2, EyeOff, Save, ShieldCheck, X } from "lucide-react";
 import { getSupabaseBrowserClient } from "../../lib/supabase-browser";
 import { originLabels, projectSelect, type AdminProject, type ProjectOrigin, type ProjectStatus } from "./types";
 
@@ -24,6 +24,7 @@ export default function ProjectEditor({ project, onClose, onSaved }: Props) {
   const [tags, setTags] = useState(project.tags.join(", "));
   const [origin, setOrigin] = useState<ProjectOrigin>(project.origin || "other");
   const [authorized, setAuthorized] = useState(project.publication_authorized);
+  const [replacementFile, setReplacementFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -33,12 +34,25 @@ export default function ProjectEditor({ project, onClose, onSaved }: Props) {
       setError("Je dois confirmer que j’ai le droit de publier cette création.");
       return;
     }
-    if (nextStatus === "published" && !project.main_image_path && !project.main_image_url) {
+    if (nextStatus === "published" && !replacementFile && !project.main_image_path && !project.main_image_url) {
       setError("Une photo principale est nécessaire avant la publication.");
       return;
     }
 
     setBusy(true);
+    let replacementPath: string | null = null;
+    let replacementUrl: string | null = null;
+    if (client && replacementFile) {
+      const { data: userData } = await client.auth.getUser();
+      const extension = replacementFile.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+      replacementPath = `${userData.user?.id || "editor"}/${crypto.randomUUID()}.${extension}`;
+      const upload = await client.storage.from("portfolio-media").upload(replacementPath, replacementFile, { cacheControl: "31536000", upsert: false });
+      if (upload.error) { setError("La nouvelle photo n’a pas pu être envoyée."); setBusy(false); return; }
+      const signed = await client.storage.from("portfolio-media").createSignedUrl(replacementPath, 3600);
+      replacementUrl = signed.data?.signedUrl || null;
+      const mediaResult = await client.from("project_media").insert({ project_id: project.id, storage_path: replacementPath, alt_fr: altFr.trim() || null, alt_en: altEn.trim() || null, position: 0 });
+      if (mediaResult.error) { await client.storage.from("portfolio-media").remove([replacementPath]); setError("La nouvelle photo n’a pas pu être rattachée à la création."); setBusy(false); return; }
+    }
     const payload = {
       title_fr: titleFr.trim(),
       title_en: titleEn.trim() || null,
@@ -52,6 +66,7 @@ export default function ProjectEditor({ project, onClose, onSaved }: Props) {
       status: nextStatus,
       published_at: nextStatus === "published" ? project.published_at || new Date().toISOString() : null,
       updated_at: new Date().toISOString(),
+      ...(replacementPath ? { main_image_path: replacementPath, main_image_url: null } : {}),
     };
 
     if (!client) {
@@ -68,7 +83,7 @@ export default function ProjectEditor({ project, onClose, onSaved }: Props) {
     if (nextStatus !== "published") {
       await client.from("homepage_featured").delete().eq("project_id", project.id);
     }
-    onSaved({ ...(result.data as AdminProject), main_image_url: project.main_image_url }, nextStatus === "published" ? "La création est maintenant publiée." : nextStatus === "archived" ? "La création est archivée." : "Le brouillon est à jour.");
+    onSaved({ ...(result.data as AdminProject), main_image_url: replacementUrl || project.main_image_url }, nextStatus === "published" ? "La création est maintenant publiée." : nextStatus === "archived" ? "La création est archivée." : "Le brouillon est à jour.");
   }
 
   function submit(event: FormEvent) {
@@ -90,6 +105,7 @@ export default function ProjectEditor({ project, onClose, onSaved }: Props) {
           <label className="block text-sm font-bold">Nom en français<input className={fieldClass} value={titleFr} onChange={(event) => setTitleFr(event.target.value)} required /></label>
           <label className="block text-sm font-bold">Nom en anglais<input className={fieldClass} value={titleEn} onChange={(event) => setTitleEn(event.target.value)} placeholder="Traduction recommandée" /></label>
         </div>
+        <label className="mt-5 block text-sm font-bold">Photo principale<span className="mt-2 flex min-h-28 cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border border-dashed border-stone-300 bg-white px-4 text-stone-600">{replacementFile ? replacementFile.name : <><Camera className="size-5" /><span>Remplacer la photo principale</span></>}<input className="sr-only" type="file" accept="image/jpeg,image/png,image/webp,image/avif" capture="environment" onChange={(event) => setReplacementFile(event.target.files?.[0] || null)} /></span><small className="mt-1 block font-normal text-stone-500">L’ancienne photo est conservée, la nouvelle devient la photo principale.</small></label>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-bold">Présentation en français<textarea className={`${fieldClass} min-h-28 py-3`} value={descriptionFr} onChange={(event) => setDescriptionFr(event.target.value)} /></label>
           <label className="block text-sm font-bold">Présentation en anglais<textarea className={`${fieldClass} min-h-28 py-3`} value={descriptionEn} onChange={(event) => setDescriptionEn(event.target.value)} /></label>
