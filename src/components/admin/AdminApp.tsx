@@ -285,23 +285,41 @@ export default function AdminApp() {
 
   useEffect(() => {
     if (!client || !authenticated) return;
-    Promise.all([
-      client.from("projects").select(projectSelect).order("updated_at", { ascending: false }),
-      client.from("homepage_featured").select("project_id,position").order("position"),
-      client.from("site_sections").select("id,title_fr,title_en,enabled,position,variant,settings").order("position"),
-    ]).then(([projectResult, featuredResult, sectionResult]) => {
-      if (projectResult.error || featuredResult.error || sectionResult.error) {
+    const activeClient = client;
+    async function loadContent() {
+      const initialProjectResult = await activeClient.from("projects").select(projectSelect).order("updated_at", { ascending: false });
+      let projectData: Array<Omit<AdminProject, "main_image_url"> & { main_image_url?: string | null }> | null = initialProjectResult.data;
+      // The published site remains usable while the database migration is being
+      // rolled out: the only missing field on the former schema is the public
+      // URL used for the portfolio imported from /public/uploads.
+      if (initialProjectResult.error?.message.includes("main_image_url")) {
+        const legacyProjectResult = await activeClient.from("projects").select("id,title_fr,title_en,description_fr,description_en,image_alt_fr,image_alt_en,tags,main_image_path,origin,status,publication_authorized,published_at").order("updated_at", { ascending: false });
+        if (legacyProjectResult.error) {
+          setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
+          return;
+        }
+        projectData = legacyProjectResult.data;
+      } else if (initialProjectResult.error) {
         setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
         return;
       }
-      Promise.all((projectResult.data as AdminProject[]).map(async (project) => {
+      const [featuredResult, sectionResult] = await Promise.all([
+        activeClient.from("homepage_featured").select("project_id,position").order("position"),
+        activeClient.from("site_sections").select("id,title_fr,title_en,enabled,position,variant,settings").order("position"),
+      ]);
+      if (!projectData || featuredResult.error || sectionResult.error) {
+        setNotice("Impossible de charger le contenu. Vérifiez les droits du compte.");
+        return;
+      }
+      Promise.all(projectData.map(async (project) => {
         if (!project.main_image_path) return project;
-        const signed = await client.storage.from("portfolio-media").createSignedUrl(project.main_image_path, 3600);
+        const signed = await activeClient.storage.from("portfolio-media").createSignedUrl(project.main_image_path, 3600);
         return { ...project, main_image_url: signed.data?.signedUrl || project.main_image_url || null };
-      })).then(setProjects);
+      })).then((loadedProjects) => setProjects(loadedProjects.map((project) => ({ ...project, main_image_url: project.main_image_url || null }))));
       setFeaturedIds(featuredResult.data.map((item) => item.project_id));
       setSections(sectionResult.data as SiteSection[]);
-    });
+    }
+    void loadContent();
   }, [client, authenticated]);
 
   const featuredProjects = featuredIds.map((id) => projects.find((project) => project.id === id)).filter((project): project is AdminProject => Boolean(project));
