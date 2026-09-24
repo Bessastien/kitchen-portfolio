@@ -4,6 +4,7 @@ import FeaturedShowcase from "../components/FeaturedShowcase.astro";
 import { getCollection } from "astro:content";
 import fs from "fs";
 import path from "path";
+import HomeHero from "../components/HomeHero";
 
 const projects = await getCollection("projects");
 const sortedProjects = projects.sort(
@@ -39,14 +40,15 @@ try {
     console.log("Using default featured projects (latest 3)");
 }
 const heroImage = featuredProjects[0]?.data.mainImage;
-const heroImageSrc = typeof heroImage === "string" ? heroImage : "/uploads/IMG_1882.jpeg";
+const heroFallback = {
+  eyebrow_fr: "Pâtissier · Poitiers · France", title_fr: "Je veux faire du dessert le dernier souvenir.", body_fr: "Je travaille les desserts de restaurant, les entremets et les créations de saison. Je construis ce portfolio au fil de ma formation et de mes expériences.",
+  eyebrow_en: "Pastry chef · Poitiers · France", title_en: "I want dessert to become the lasting memory.", body_en: "I create restaurant desserts, entremets and seasonal pastries. This portfolio grows alongside my training and professional experience.",
+  hero_image_url: typeof heroImage === "string" ? heroImage : "/uploads/IMG_1882.jpeg", hero_image_alt_fr: featuredProjects[0]?.data.title ?? "Création pâtissière de Florent Dabert", hero_image_alt_en: featuredProjects[0]?.data.titleEn ?? "Florent Dabert pastry creation",
+};
 ---
 
 <Layout title="Pâtissier · desserts de restaurant" description="Je suis Florent Dabert, pâtissier en formation spécialisé en desserts de restaurant et créations pâtissières.">
-  <section class="mx-auto grid max-w-7xl gap-10 px-4 pb-16 pt-12 sm:px-6 md:grid-cols-[1.05fr_.95fr] md:items-center md:py-22 lg:px-8">
-    <div class="order-2 md:order-1"><p class="eyebrow">Pâtissier · Poitiers · France</p><h1 class="mt-5 max-w-xl font-serif text-5xl leading-[.95] tracking-tight text-stone-950 sm:text-6xl lg:text-7xl">Je veux faire du dessert <em class="font-normal text-amber-800">le dernier souvenir.</em></h1><p class="mt-6 max-w-lg text-lg leading-relaxed text-stone-600">Je travaille les desserts de restaurant, les entremets et les créations de saison. Je construis ce portfolio au fil de ma formation et de mes expériences.</p><div class="mt-8 flex flex-wrap gap-3"><a class="button-primary" href="#selection">Voir ma sélection</a><a class="button-secondary" href="/journey">Découvrir mon parcours</a></div></div>
-    <div class="order-1 overflow-hidden rounded-[2rem] bg-stone-200 shadow-[0_24px_60px_rgb(60,42,25,0.2)] md:order-2"><img src={heroImageSrc} alt={featuredProjects[0]?.data.title ?? "Création pâtissière de Florent Dabert"} class="aspect-[4/5] h-full w-full object-cover" fetchpriority="high" /></div>
-  </section>
+  <HomeHero client:load locale="fr" fallback={heroFallback} />
   <section id="selection" class="border-y border-stone-200 bg-[#f4ede2]"><div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"><div class="mb-8 flex items-end justify-between gap-5"><div><p class="eyebrow">À la une</p><h2 class="mt-2 font-serif text-4xl text-stone-950">Mes créations choisies</h2><p class="mt-3 max-w-xl text-sm leading-relaxed text-stone-600">Faites glisser la sélection sur téléphone pour découvrir les créations mises en avant.</p></div><a href="/projects" class="hidden text-sm font-bold text-amber-900 underline underline-offset-4 sm:block">Tout voir</a></div><FeaturedShowcase projects={featuredProjects} /><div class="mt-6 sm:hidden"><a href="/projects" class="button-secondary w-full">Voir toutes mes créations</a></div></div></section>
   <section class="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-6 md:grid-cols-3 lg:px-8"><div><p class="eyebrow">Mon parcours évolue</p><h2 class="mt-3 font-serif text-3xl text-stone-950">Apprendre, créer, voyager.</h2></div><p class="text-stone-600">Je prépare actuellement un Certificat de spécialisation Desserts de restaurant au Campus 120. J’y développe une pâtisserie de précision, pensée pour l’assiette, avec l’envie de poursuivre mon parcours à l’international.</p><a href="/contact" class="button-primary self-start md:justify-self-end">Me contacter</a></section>
 </Layout>

@@ -1,6 +1,7 @@
 ---
 import { Globe, Menu, X } from "lucide-astro";
 import { href, labels, type Locale } from "../lib/site";
+import ProfileMark from "./ProfileMark";
 
 interface Props { locale?: Locale; }
 const { locale = "fr" } = Astro.props;
@@ -12,7 +13,7 @@ const switchTo = locale === "fr" ? `/en${Astro.url.pathname === "/" ? "/" : Astr
 <nav class="sticky top-0 z-50 border-b border-stone-200/70 bg-[#fbf8f3]/90 backdrop-blur-xl">
   <div class="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
     <a href={href(locale)} class="group flex items-center gap-3" aria-label="Florent Dabert">
-      <span class="grid h-10 w-10 place-items-center rounded-full bg-stone-900 font-serif text-lg text-[#f9e5c5] transition-transform group-hover:rotate-6">FD</span>
+      <ProfileMark client:load />
       <span class="leading-none"><strong class="block font-serif text-lg tracking-tight text-stone-950">Florent Dabert</strong><small class="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-800">Pâtissier</small></span>
     </a>
     <div class="hidden items-center gap-7 md:flex">
