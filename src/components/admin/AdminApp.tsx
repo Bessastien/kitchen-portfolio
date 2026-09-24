@@ -269,6 +269,7 @@ export default function AdminApp() {
   const [saving, setSaving] = useState(false);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<AdminProject | null>(null);
+  const [activeArea, setActiveArea] = useState<"projects" | "homepage" | "settings">("projects");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -394,18 +395,17 @@ export default function AdminApp() {
           <div><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Administration</p><h1 className="font-serif text-xl">Mon portfolio</h1></div>
           <div className="flex gap-2"><a className="grid size-11 place-items-center rounded-full border border-stone-300 bg-white" href="/" aria-label="Voir le site"><Eye className="size-5" /></a>{client && <button className="grid size-11 place-items-center rounded-full border border-stone-300 bg-white" type="button" onClick={() => client.auth.signOut()} aria-label="Me déconnecter"><LogOut className="size-5" /></button>}</div>
         </div>
+        <nav className="mx-auto mt-3 grid max-w-5xl grid-cols-3 rounded-2xl bg-stone-200/70 p-1" aria-label="Rubriques du Studio">
+          {([['projects', 'Créations'], ['homepage', 'Accueil'], ['settings', 'Réglages']] as const).map(([area, label]) => <button key={area} type="button" onClick={() => setActiveArea(area)} className={`min-h-11 rounded-xl px-2 text-sm font-bold transition ${activeArea === area ? 'bg-white text-stone-950 shadow-sm' : 'text-stone-600'}`} aria-current={activeArea === area ? 'page' : undefined}>{label}</button>)}
+        </nav>
       </header>
 
       <div className="mx-auto max-w-5xl px-4 py-6">
         {notice && <p className="mb-5 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950" role="status">{notice}</p>}
-        <section className="grid gap-3 sm:grid-cols-2">
-          <button type="button" onClick={() => setCreating(true)} className="flex min-h-24 items-center gap-4 rounded-3xl bg-stone-950 p-5 text-left text-white"><span className="grid size-12 place-items-center rounded-full bg-white/10"><ImagePlus className="size-6" /></span><span><strong className="block text-lg">Ajouter une création</strong><small className="text-stone-300">Photo, titre et contexte</small></span></button>
-          <div className="flex min-h-24 items-center gap-4 rounded-3xl border border-stone-200 bg-white p-5"><span className="grid size-12 place-items-center rounded-full bg-amber-100 text-amber-900"><Sparkles className="size-6" /></span><span><strong className="block text-lg">{projects.length} créations</strong><small className="text-stone-500">{projects.filter((project) => project.status === "published").length} publiées</small></span></div>
-        </section>
-
+        {activeArea === "homepage" && <>
         <HomeContentEditor section={sections.find((section) => section.id === "hero") || demoSections[0]} onSaved={(settings) => setSections((current) => current.map((section) => section.id === "hero" ? { ...section, settings } : section))} />
 
-        <section className="mt-8 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
+        <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
           <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Page d’accueil · {featuredIds.length}/6</p><h2 className="mt-1 font-serif text-3xl">Ma sélection à la une</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je maintiens la poignée pour changer l’ordre. Je peux retirer une création avec la croix et en ajouter depuis « Mes créations ».</p></div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
             <SortableContext items={featuredIds} strategy={verticalListSortingStrategy}>
@@ -415,14 +415,16 @@ export default function AdminApp() {
           {featuredProjects.length === 0 && <p className="rounded-2xl border border-dashed border-stone-300 p-5 text-center text-sm text-stone-500">Aucune création à la une pour le moment.</p>}
           <button type="button" className="button-primary mt-5 w-full gap-2" onClick={saveFeatured} disabled={saving}><Save className="size-4" />{saving ? "Enregistrement…" : "Enregistrer l’ordre"}</button>
         </section>
+        </>}
 
-        <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
+        {activeArea === "projects" && <section className="rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
           <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Contenu</p><h2 className="mt-1 font-serif text-3xl">Mes créations</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je touche une création pour compléter ses textes, confirmer les droits ou la publier. L’étoile l’ajoute à la une.</p></div>
+          <button type="button" onClick={() => setCreating(true)} className="button-primary mb-5 w-full gap-2"><ImagePlus className="size-4" />Ajouter une création</button>
           <div className="grid gap-3">{projects.map((project) => <ProjectListCard key={project.id} project={project} featured={featuredIds.includes(project.id)} onEdit={() => setEditing(project)} onFeature={() => toggleFeatured(project)} />)}</div>
           <button type="button" className="button-secondary mt-5 w-full gap-2" onClick={() => setCreating(true)}><Plus className="size-4" />Ajouter une création</button>
-        </section>
+        </section>}
 
-        <section className="mt-6 rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
+        {activeArea === "settings" && <section className="rounded-[2rem] border border-stone-200 bg-[#fffdf9] p-4 sm:p-6">
           <div className="mb-5"><p className="text-[10px] font-bold uppercase tracking-[.16em] text-amber-800">Structure du site</p><h2 className="mt-1 font-serif text-3xl">Mes sections</h2><p className="mt-2 text-sm leading-relaxed text-stone-600">Je réorganise la page d’accueil et je masque les sections dont je n’ai pas besoin.</p></div>
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onSectionDragEnd}>
             <SortableContext items={sections.map((section) => section.id)} strategy={verticalListSortingStrategy}>
@@ -431,6 +433,7 @@ export default function AdminApp() {
           </DndContext>
           <button type="button" className="button-secondary mt-5 w-full gap-2" onClick={saveSections} disabled={saving}><Save className="size-4" />Enregistrer les sections</button>
         </section>
+        }
       </div>
       {creating && <CreateProjectSheet onClose={() => setCreating(false)} onCreated={(project) => { setProjects((current) => [project, ...current]); setNotice("Le brouillon a été ajouté."); }} />}
       {editing && <ProjectEditor project={editing} onClose={() => setEditing(null)} onSaved={(project, message) => { setProjects((current) => current.map((item) => item.id === project.id ? project : item)); if (project.status !== "published") setFeaturedIds((current) => current.filter((id) => id !== project.id)); setEditing(null); setNotice(message); }} />}

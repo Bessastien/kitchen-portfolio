@@ -1,9 +1,9 @@
 -- The original portfolio is now managed from the Studio as well as from the
 -- repository. Existing pictures remain in /public/uploads, so their public URL
 -- is kept separately from files uploaded later to Supabase Storage.
-alter table public.projects add column main_image_url text;
+alter table public.projects add column if not exists main_image_url text;
 
-alter table public.projects drop constraint published_projects_are_ready;
+alter table public.projects drop constraint if exists published_projects_are_ready;
 alter table public.projects add constraint published_projects_are_ready
   check (
     status <> 'published'
@@ -63,6 +63,8 @@ on conflict (project_id) do nothing;
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 values ('site-assets', 'site-assets', true, 12582912, array['image/jpeg','image/png','image/webp','image/avif'])
 on conflict (id) do update set public = true, file_size_limit = excluded.file_size_limit, allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Editors can manage site assets" on storage.objects;
 
 create policy "Editors can manage site assets"
 on storage.objects for all
